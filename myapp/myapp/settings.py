@@ -102,11 +102,11 @@ WSGI_APPLICATION = "myapp.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'wybory',  # Nazwa Twojej bazy danych
-        'USER': 'admin1',  # Nazwa użytkownika PostgreSQL
-        'PASSWORD': 'admin1',          # Hasło użytkownika PostgreSQL
-        'HOST': 'localhost',          # Adres hosta (np. localhost)
-        'PORT': '5432',               # Port PostgreSQL (domyślnie 5432)
+        'NAME': 'wybory', 
+        'USER': 'admin1', 
+        'PASSWORD': 'admin1',        
+        'HOST': 'localhost',        
+        'PORT': '5432',            
     }
 }
 
