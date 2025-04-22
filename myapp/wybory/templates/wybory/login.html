@@ -1,0 +1,13 @@
+{% extends 'wybory/base.html' %}
+
+{% block title %}Logowanie - E-Wybory{% endblock %}
+
+{% block content %}
+<h2>Zaloguj się</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Zaloguj</button>
+</form>
+<p>Nie masz konta? <a href="{% url 'signup' %}">Zarejestruj się</a></p>
+{% endblock %}

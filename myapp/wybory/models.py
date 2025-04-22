@@ -2,18 +2,35 @@ from django.db import models
 
 # Create your models here.
 
-class Election(models.Model):
-    ELECTION_TYPES = [
-        ('presidential', 'Presidential'),
-        ('parliamentary', 'Parliamentary'),
-        ('starosty', 'Starosty'),
-        ('dean', 'Dean'),
-    ]
+# class Election(models.Model):
+#     ELECTION_TYPES = [
+#         ('presidential', 'Presidential'),
+#         ('parliamentary', 'Parliamentary'),
+#         ('starosty', 'Starosty'),
+#         ('dean', 'Dean'),
+#     ]
 
-    title = models.CharField(max_length = 100)
-    election_type = models.CharField(max_length = 20, choices=ELECTION_TYPES)
+#     title = models.CharField(max_length = 100)
+#     election_type = models.CharField(max_length = 20, choices=ELECTION_TYPES)
+#     date = models.DateField()
+#     description = models.TextField()
+
+class ElectionType(models.Model):
+    name = models.CharField(max_length=50, unique=True)  
+    description = models.TextField(null=True, blank=True)  
+
+    def __str__(self):
+        return self.name
+
+
+class Election(models.Model):
+    title = models.CharField(max_length=100)
+    election_type = models.ForeignKey(ElectionType, on_delete=models.CASCADE, related_name='elections')  
     date = models.DateField()
     description = models.TextField()
+
+    def __str__(self):
+        return self.title
 
 
 class Party(models.Model):

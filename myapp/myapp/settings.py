@@ -40,6 +40,11 @@ INSTALLED_APPS = [
     "wybory",
 ]
 
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+STATIC_URL = '/static/'
+print("LOGOUT_REDIRECT_URL:", LOGOUT_REDIRECT_URL)
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -128,6 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
 
 
 # Internationalization

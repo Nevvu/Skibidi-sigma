@@ -1,9 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Wybory</title>
-</head>
-<body>
-    <h1>Witamy w systemie E-Wybory!</h1>
-</body>
-</html>
+{% extends 'wybory/base.html' %}
+
+{% block title %}Strona główna - E-Wybory{% endblock %}
+
+{% block content %}
+<h2>Dostępne wybory:</h2>
+<ul>
+    {% for election in elections %}
+        <li>
+            <a href="{% url 'candidate_list' election.id %}">
+                {{ election.title }} ({{ election.election_type.name }})
+            </a>
+            <p>{{ election.description }}</p>
+            <p>Data: {{ election.date }}</p>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}
