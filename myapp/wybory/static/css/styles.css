@@ -1,0 +1,135 @@
+h1{
+    text-align: center; 
+    margin-top: 20px; 
+    font-size: 2.5em; 
+    color: #333; 
+}
+
+/* Stylizacja nav bara logowania i tego wyswietlana podstron*/
+
+nav a {
+    margin-right: 10px;
+}
+
+.auth-nav {
+    position: fixed; 
+    top: 10px;       
+    right: 10px;    
+    padding: 10px 20px;
+    background-color: #f9f9f9; 
+    border-radius: 5px;       
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); 
+}
+
+.auth-nav a, .auth-nav button {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    margin-left: 10px;
+    background-color: #e0e0e0; 
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.auth-nav button:hover, .auth-nav a:hover {
+    background-color: #d6d6d6; 
+}
+
+.main-nav {
+    margin-top: 50px; 
+    display: flex;
+    justify-content: center;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+select {
+    padding: 5px;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+h3 {
+    margin-top: 20px;
+}
+
+/* Stylizacja nawigacji */
+.main-nav {
+    background-color: #f4f4f4;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.main-nav .nav-container a {
+    margin-right: 15px;
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+}
+
+.main-nav .nav-container a:hover {
+    color: #007bff;
+}
+
+/* Stylizacja rozwijanej listy */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    background-color: #f4f4f4;
+    color: #333;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #ffffff;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: #333;
+    padding: 10px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    color: #007bff;
+}
+
+@media (max-width: 768px) {
+    .auth-nav {
+        top: 5px;
+        right: 5px;
+        padding: 5px 10px;
+    }
+
+    .auth-nav a, .auth-nav button {
+        font-size: 14px;
+        padding: 3px 8px;
+    }
+}
