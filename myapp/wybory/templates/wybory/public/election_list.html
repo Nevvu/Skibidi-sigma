@@ -1,0 +1,14 @@
+{% extends 'wybory/base.html' %}
+
+{% block title %}Lista Wyborów{% endblock %}
+
+{% block content %}
+<h2>Lista Wyborów</h2>
+<ul>
+    {% for election in elections %}
+        <li>
+            <a href="{% url 'election_detail' election.id %}">{{ election.title }}</a> - {{ election.date }}
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

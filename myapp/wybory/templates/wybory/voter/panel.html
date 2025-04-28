@@ -1,0 +1,13 @@
+{% extends 'wybory/base.html' %}
+
+{% block title %}Panel Wyborcy{% endblock %}
+
+{% block content %}
+<h2>Witaj, {{ user.username }}</h2>
+<p>Tu znajdziesz swoje aktywne wybory i historię głosowania.</p>
+<ul>
+    <li><a href="{% url 'ballot' %}">Karta do głosowania</a></li>
+    <li><a href="{% url 'activity_history' %}">Historia aktywności</a></li>
+    <li><a href="{% url 'profile' %}">Profil użytkownika</a></li>
+</ul>
+{% endblock %}

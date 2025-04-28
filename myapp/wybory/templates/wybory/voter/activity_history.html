@@ -1,0 +1,12 @@
+{% extends 'wybory/base.html' %}
+
+{% block title %}Historia Aktywności{% endblock %}
+
+{% block content %}
+<h2>Historia Aktywności</h2>
+<ul>
+    {% for vote in votes %}
+        <li>{{ vote.election.title }} - {{ vote.date }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

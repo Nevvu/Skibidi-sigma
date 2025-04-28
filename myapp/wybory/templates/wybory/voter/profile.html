@@ -1,0 +1,29 @@
+{% extends 'wybory/base.html' %}
+
+{% block title %}Profil Użytkownika{% endblock %}
+
+{% block content %}
+<h2>Profil Użytkownika</h2>
+<p><strong>Email:</strong> {{ user.email }}</p>
+
+{% if voter %}
+    <p><strong>Status weryfikacji:</strong> 
+        {% if voter.verification_status == 'approved' %}
+            <span style="color: green;">Zatwierdzone</span>
+        {% elif voter.verification_status == 'pending' %}
+            <span style="color: orange;">Oczekujące</span>
+        {% elif voter.verification_status == 'rejected' %}
+            <span style="color: red;">Odrzucone</span>
+        {% endif %}
+    </p>
+
+    <h3>Edytuj swoje dane</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Zapisz zmiany</button>
+    </form>
+{% else %}
+    <p>Nie znaleziono danych wyborcy.</p>
+{% endif %}
+{% endblock %}

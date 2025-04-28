@@ -1,0 +1,12 @@
+{% extends 'wybory/base.html' %}
+
+{% block title %}Kalendarz Wyborczy{% endblock %}
+
+{% block content %}
+<h2>Kalendarz Wyborczy</h2>
+<ul>
+    {% for election in elections %}
+        <li>{{ election.date }} - {{ election.title }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

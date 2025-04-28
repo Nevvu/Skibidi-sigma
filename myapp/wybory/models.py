@@ -1,19 +1,8 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth.models import User
 
-# Create your models here.
-
-# class Election(models.Model):
-#     ELECTION_TYPES = [
-#         ('presidential', 'Presidential'),
-#         ('parliamentary', 'Parliamentary'),
-#         ('starosty', 'Starosty'),
-#         ('dean', 'Dean'),
-#     ]
-
-#     title = models.CharField(max_length = 100)
-#     election_type = models.CharField(max_length = 20, choices=ELECTION_TYPES)
-#     date = models.DateField()
-#     description = models.TextField()
 
 class ElectionType(models.Model):
     name = models.CharField(max_length=50, unique=True)  
@@ -50,18 +39,36 @@ class Candidate(models.Model):
         return self.name
 
 
-class Voter(models.Model):
-    name = models.CharField(max_length = 100)
-    email = models.EmailField(unique=True)
-    pesel_num = models.CharField(max_length = 11, unique=True)
-    eligible = models.BooleanField(default=True)
 
+
+class Voter(models.Model):
+    # user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    name = models.CharField(max_length=100)  # Imię
+    last_name = models.CharField(max_length=100, blank=True, null=True)  # Nazwisko
+    email = models.EmailField(unique=True)
+    pesel_num = models.CharField(max_length=11, unique=True)
+    eligible = models.BooleanField(default=False)
+    address = models.CharField(max_length=255, blank=True, null=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    verification_status = models.CharField(
+        max_length=20,
+        choices=[('pending', 'Oczekujące'), ('approved', 'Zatwierdzone'), ('rejected', 'Odrzucone')],
+        default='pending'
+    )
+
+    def __str__(self):
+        return f"{self.name} {self.last_name}"
 
 class Vote(models.Model):
     voter = models.ForeignKey(Voter, on_delete = models.CASCADE)
     candidate = models.ForeignKey(Candidate, on_delete = models.CASCADE)
     election = models.ForeignKey(Election, on_delete = models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add = True)    
+
+@receiver(post_save, sender=User)
+def create_voter(sender, instance, created, **kwargs):
+    if created:
+        Voter.objects.create(name=instance.username, email=instance.email)
 
 class VotingCriteria(models.Model):
     election = models.OneToOneField(Election, on_delete=models.CASCADE)

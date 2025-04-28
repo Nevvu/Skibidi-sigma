@@ -1,0 +1,16 @@
+{% extends 'wybory/base.html' %}
+
+{% block title %}Szczegóły Wyborów{% endblock %}
+
+{% block content %}
+<h2>{{ election.title }}</h2>
+<p>Data: {{ election.date }}</p>
+<p>Opis: {{ election.description }}</p>
+
+<h3>Kandydaci:</h3>
+<ul>
+    {% for candidate in candidates %}
+        <li>{{ candidate.name }} - {{ candidate.party.name if candidate.party else "Bezpartyjny" }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

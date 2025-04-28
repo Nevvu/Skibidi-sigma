@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}E-Wybory{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <!-- Link do ikon Font Awesome (opcjonalnie) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <h1>Witamy w systemie E-Wybory</h1>
@@ -14,40 +16,52 @@
         <div class="auth-container">
             {% if user.is_authenticated %}
                 <p>Witaj, {{ user.username }}!</p>
-                <form method="post" action="{% url 'logout' %}" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit">Wyloguj się</button>
-                </form>
+                <div class="dropdown">
+                    <button class="dropbtn">
+                        <i class="fas fa-user-circle"></i> Moje konto 
+                        <i class="fas fa-chevron-down" style="font-size: 0.8em;"></i>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="{% url 'voter_panel' %}"><i class="fas fa-home"></i> Panel wyborcy</a>
+                        <a href="{% url 'ballot' %}"><i class="fas fa-vote-yea"></i> Karta do głosowania</a>
+                        <a href="{% url 'activity_history' %}"><i class="fas fa-history"></i> Historia aktywności</a>
+                        <a href="{% url 'profile' %}"><i class="fas fa-user-edit"></i> Profil</a>
+                        <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Wyloguj się</button>
+                        </form>
+                    </div>
+                </div>
             {% else %}
-                <a href="{% url 'login' %}">Zaloguj się</a>
-                <a href="{% url 'signup' %}">Zarejestruj się</a>
+                <a href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Zaloguj się</a>
+                <a href="{% url 'signup' %}"><i class="fas fa-user-plus"></i> Zarejestruj się</a>
             {% endif %}
         </div>
     </nav>
 
     <nav class="main-nav">
         <div class="nav-container">
-            <a href="{% url 'home' %}">Strona główna</a>
-            <a href="{% url 'candidate_search' %}">Lista kandydatów</a>
-            <a href="{% url 'parties' %}">Partie</a>
-            <a href="{% url 'results' %}">Wyniki wyborów</a>
+            <a href="{% url 'home' %}"><i class="fas fa-home"></i> Strona główna</a>
+            <a href="{% url 'candidate_search' %}"><i class="fas fa-search"></i> Lista kandydatów</a>
+            <a href="{% url 'parties' %}"><i class="fas fa-users"></i> Partie</a>
+            <a href="{% url 'results' %}"><i class="fas fa-chart-bar"></i> Wyniki wyborów</a>
+            <a href="{% url 'election_calendar' %}"><i class="fas fa-calendar-alt"></i> Kalendarz wyborczy</a>
             <div class="dropdown">
-                <button class="dropbtn">Więcej</button>
+                <button class="dropbtn">
+                    <i class="fas fa-ellipsis-h"></i> Więcej
+                    <i class="fas fa-chevron-down" style="font-size: 0.8em;"></i>
+                </button>
                 <div class="dropdown-content">
-                    <!-- tu kurwa ten bedzie FAQ kontakt (albo na dole w footerze chuj wie) itp -->
+                    <a href="{% url 'faq' %}"><i class="fas fa-question-circle"></i> FAQ</a>
+                    <a href="{% url 'contact' %}"><i class="fas fa-envelope"></i> Kontakt</a>
                 </div>
             </div>
         </div>
     </nav>
 
-    
-
-            
-
     <hr>
 
     {% block content %}
-    <!-- Zawartość specyficzna dla podstron -->
     {% endblock %}
 </body>
 </html>

@@ -3,6 +3,13 @@
 {% block title %}Partie{% endblock %}
 
 {% block content %}
-<h2>Partie</h2>
-<p>Lista partii politycznych.</p>
+<h2>Lista Partii</h2>
+<ul>
+    {% for party in parties %}
+        <li>
+            <strong>{{ party.name }}</strong>
+            <p>{{ party.description }}</p>
+        </li>
+    {% endfor %}
+</ul>
 {% endblock %}
