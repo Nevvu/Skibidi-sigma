@@ -4,6 +4,15 @@
 
 {% block content %}
 <h2>Witaj, {{ user.username }}</h2>
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li class="alert {{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
 <p>Tu znajdziesz swoje aktywne wybory i historię głosowania.</p>
 <ul>
     <li><a href="{% url 'ballot' %}">Karta do głosowania</a></li>

@@ -3,9 +3,11 @@ from django.http import JsonResponse
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
+from django.contrib import messages  
 from .models import *
 from .forms import *
 import datetime
+from .forms import CustomUserCreationForm
 
 # --- Public views ---
 def home(request):
@@ -13,9 +15,9 @@ def home(request):
     return render(request, 'wybory/public/home.html', {'elections': elections})
 
 def signup(request):
-    form = UserCreationForm(request.POST or None)
+    form = CustomUserCreationForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        form.save()
+        user = form.save()  # Tworzy użytkownika i wywołuje sygnał `create_voter`
         return redirect('login')
     return render(request, 'wybory/public/signup.html', {'form': form})
 
@@ -76,11 +78,18 @@ def election_detail(request, election_id):
 @login_required
 def voter_panel(request): return render(request, 'wybory/voter/panel.html')
 
+
+
 @login_required
 def ballot(request):
-    voter = Voter.objects.filter(email=request.user.email).first()
-    if not voter or not voter.eligible:
-        return redirect('verify_identity')
+    voter = Voter.objects.filter(user=request.user).first()
+    if not voter:
+        return redirect('verify_identity')  
+
+    if not voter.eligible or voter.verification_status != 'approved':
+        messages.error(request, "Musisz być zweryfikowany, aby móc głosować.")
+        return redirect('voter_panel')  
+
     elections = Election.objects.filter(date__gte=datetime.date.today())
     return render(request, 'wybory/voter/ballot.html', {'elections': elections})
 
@@ -92,26 +101,32 @@ def activity_history(request):
     votes = Vote.objects.filter(voter=voter)
     return render(request, 'wybory/voter/activity_history.html', {'votes': votes})
 
+
 @login_required
 def profile(request):
-    voter = Voter.objects.filter(email=request.user.email).first()
+    voter = Voter.objects.filter(user=request.user).first()  
     if not voter:
-        return redirect('verify_identity')
+        return redirect('verify_identity')  
+
     form = EditProfileForm(request.POST or None, instance=voter)
     if request.method == 'POST' and form.is_valid():
         form.save()
-        return redirect('profile')
+        return redirect('profile')  
+
     return render(request, 'wybory/voter/profile.html', {'user': request.user, 'voter': voter, 'form': form})
 
 @login_required
 def verify_identity(request):
-    voter = Voter.objects.filter(email=request.user.email).first()
+    voter = Voter.objects.filter(user=request.user).first()
     if not voter:
-        return JsonResponse({'status': 'error', 'message': 'Nie znaleziono użytkownika w bazie wyborców.'})
+        voter = Voter.objects.create(user=request.user, name=request.user.username, email=request.user.email)
+
     form = VerificationForm(request.POST or None, instance=voter)
     if request.method == 'POST' and form.is_valid():
         form.save()
-        voter.verification_status = 'pending'
+        voter.verification_status = 'pending'  
         voter.save()
-        return redirect('voter_panel')
+        messages.success(request, "Twoje dane zostały przesłane do weryfikacji.")
+        return redirect('voter_panel')  
+
     return render(request, 'wybory/voter/verify_identity.html', {'form': form})

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Voter, Candidate, Election, VotingCriteria, ElectionType
+from .models import *
 
 class VoterAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'pesel_num', 'eligible', 'verification_status')
@@ -27,3 +27,4 @@ admin.site.register(Candidate)
 admin.site.register(Election)
 admin.site.register(VotingCriteria)
 admin.site.register(ElectionType)
+admin.site.register(Party)

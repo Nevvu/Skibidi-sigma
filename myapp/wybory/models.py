@@ -42,11 +42,11 @@ class Candidate(models.Model):
 
 
 class Voter(models.Model):
-    # user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
-    name = models.CharField(max_length=100)  # Imię
-    last_name = models.CharField(max_length=100, blank=True, null=True)  # Nazwisko
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)  
+    last_name = models.CharField(max_length=100, blank=True, null=True)  
     email = models.EmailField(unique=True)
-    pesel_num = models.CharField(max_length=11, unique=True)
+    pesel_num = models.CharField(max_length=11)
     eligible = models.BooleanField(default=False)
     address = models.CharField(max_length=255, blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
@@ -68,7 +68,7 @@ class Vote(models.Model):
 @receiver(post_save, sender=User)
 def create_voter(sender, instance, created, **kwargs):
     if created:
-        Voter.objects.create(name=instance.username, email=instance.email)
+        Voter.objects.create(user=instance, name=instance.username, email=instance.email)
 
 class VotingCriteria(models.Model):
     election = models.OneToOneField(Election, on_delete=models.CASCADE)

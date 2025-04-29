@@ -22,3 +22,6 @@ urlpatterns = [
     path('voter/profile/', views.profile, name='profile'),
     path('voter/verify/', views.verify_identity, name='verify_identity'),
 ]
+from django.urls import path
+from . import views
+
