@@ -21,7 +21,11 @@ urlpatterns = [
     path('voter/history/', views.activity_history, name='activity_history'),
     path('voter/profile/', views.profile, name='profile'),
     path('voter/verify/', views.verify_identity, name='verify_identity'),
+    path('cast_vote/<int:election_id>/', views.cast_vote, name='cast_vote'),
 ]
+from django.urls import path
+from . import views
+
 from django.urls import path
 from . import views
 

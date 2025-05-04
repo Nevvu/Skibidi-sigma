@@ -1,0 +1,32 @@
+{% extends 'wybory/base.html' %}
+
+{% block title %}Oddaj Głos{% endblock %}
+
+{% block content %}
+<h2>Oddaj Głos</h2>
+
+<p><strong>Wybory:</strong> {{ election.title }}</p>
+<p><strong>Data:</strong> {{ election.date }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <ul>
+        {% for candidate in candidates %}
+            <li>
+                <label>
+                    <input type="radio" name="candidate_id" value="{{ candidate.id }}">
+                    {{ candidate.name }}
+                    {% if candidate.party %}
+                        ({{ candidate.party.name }})
+                    {% else %}
+                        (Bezpartyjny)
+                    {% endif %}
+                </label>
+            </li>
+        {% endfor %}
+    </ul>
+    <button type="submit">Oddaj głos</button>
+</form>
+
+<p><a href="{% url 'ballot' %}">Powrót do karty do głosowania</a></p>
+{% endblock %}

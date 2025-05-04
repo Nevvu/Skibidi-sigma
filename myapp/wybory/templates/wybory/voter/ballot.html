@@ -4,10 +4,16 @@
 
 {% block content %}
 <h2>Karta do Głosowania</h2>
+
 <ul>
     {% for election in elections %}
         <li>
-            <a href="{% url 'cast_vote' election.id %}">{{ election.title }}</a>
+            {{ election.date }} - {{ election.title }}
+            {% if voter.eligible and voter.verification_status == 'approved' %}
+                <a href="{% url 'cast_vote' election.id %}">Przejdź do głosowania</a>
+            {% else %}
+                <span style="color: red;">(Musisz być zweryfikowany, aby głosować)</span>
+            {% endif %}
         </li>
     {% endfor %}
 </ul>

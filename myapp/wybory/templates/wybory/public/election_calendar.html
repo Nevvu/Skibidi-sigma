@@ -6,7 +6,11 @@
 <h2>Kalendarz Wyborczy</h2>
 <ul>
     {% for election in elections %}
-        <li>{{ election.date }} - {{ election.title }}</li>
+        <li>
+            <strong>{{ election.date }}</strong>: {{ election.title }}
+        </li>
+    {% empty %}
+        <p>Brak nadchodzących wyborów.</p>
     {% endfor %}
 </ul>
 {% endblock %}
