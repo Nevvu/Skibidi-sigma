@@ -30,7 +30,7 @@ def election_list(request):
     return render(request, 'wybory/public/election_list.html', {'elections': elections})
 
 def election_calendar(request):
-    elections = Election.objects.all().order_by('date')
+    elections = Election.objects.filter(date__gte=datetime.date.today()).order_by('date')
     return render(request, 'wybory/public/election_calendar.html', {'elections': elections})
 
 def parties(request):
@@ -59,15 +59,38 @@ def eligible_voters(request, election_id):
     return render(request, 'wybory/uprawnieni_wyborcy.html', {'voters': voters})
 
 # --- Voting process ---
+@login_required
 def cast_vote(request, election_id):
+    voter = Voter.objects.filter(user=request.user).first()
+    if not voter:
+        messages.error(request, "Nie znaleziono Twoich danych wyborcy.")
+        return redirect('voter_panel')
+
+    if not voter.eligible or voter.verification_status != 'approved':
+        messages.error(request, "Musisz być zweryfikowany, aby móc głosować.")
+        return redirect('voter_panel')
+
+    election = Election.objects.filter(id=election_id, date__gte=datetime.date.today()).first()
+    if not election:
+        messages.error(request, "Nie znaleziono wyborów lub są one niedostępne.")
+        return redirect('voter_panel')
+
     if request.method == 'POST':
-        voter_id = request.POST.get('voter_id')
         candidate_id = request.POST.get('candidate_id')
-        if Voter.objects.filter(id=voter_id, eligible=True).exists():
-            Vote.objects.create(voter_id=voter_id, candidate_id=candidate_id, election_id=election_id)
-            return JsonResponse({'status': 'success', 'message': 'Vote cast successfully.'})
-        return JsonResponse({'status': 'error', 'message': 'Voter not eligible.'})
-    return render(request, 'wybory/voter/vote.html', {'election_id': election_id})
+        if not Candidate.objects.filter(id=candidate_id, election=election).exists():
+            messages.error(request, "Wybrany kandydat nie istnieje.")
+            return redirect('cast_vote', election_id=election_id)
+
+        if Vote.objects.filter(voter=voter, election=election).exists():
+            messages.error(request, "Już oddałeś głos w tych wyborach.")
+            return redirect('voter_panel')
+
+        Vote.objects.create(voter=voter, candidate_id=candidate_id, election=election)
+        messages.success(request, "Twój głos został oddany pomyślnie.")
+        return redirect('voter_panel')
+
+    candidates = election.candidates.all()
+    return render(request, 'wybory/voter/cast_vote.html', {'election': election, 'candidates': candidates})
 
 def election_detail(request, election_id):
     election = Election.objects.get(id=election_id)
@@ -84,14 +107,15 @@ def voter_panel(request): return render(request, 'wybory/voter/panel.html')
 def ballot(request):
     voter = Voter.objects.filter(user=request.user).first()
     if not voter:
-        return redirect('verify_identity')  
+        messages.error(request, "Nie znaleziono Twoich danych wyborcy.")
+        return redirect('verify_identity')
 
     if not voter.eligible or voter.verification_status != 'approved':
         messages.error(request, "Musisz być zweryfikowany, aby móc głosować.")
-        return redirect('voter_panel')  
+        return redirect('voter_panel')
 
     elections = Election.objects.filter(date__gte=datetime.date.today())
-    return render(request, 'wybory/voter/ballot.html', {'elections': elections})
+    return render(request, 'wybory/voter/ballot.html', {'elections': elections, 'voter': voter})
 
 @login_required
 def activity_history(request):
