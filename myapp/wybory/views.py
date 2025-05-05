@@ -17,7 +17,7 @@ def home(request):
 def signup(request):
     form = CustomUserCreationForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        user = form.save()  # Tworzy użytkownika i wywołuje sygnał `create_voter`
+        user = form.save()  
         return redirect('login')
     return render(request, 'wybory/public/signup.html', {'form': form})
 
@@ -119,10 +119,12 @@ def ballot(request):
 
 @login_required
 def activity_history(request):
-    voter = Voter.objects.filter(email=request.user.email).first()
+    voter = Voter.objects.filter(user=request.user).first()
     if not voter:
-        return JsonResponse({'status': 'error', 'message': 'Nie znaleziono użytkownika w bazie wyborców.'})
-    votes = Vote.objects.filter(voter=voter)
+        messages.error(request, "Nie znaleziono Twoich danych wyborcy.")
+        return redirect('voter_panel')  
+
+    votes = Vote.objects.filter(voter=voter).select_related('candidate', 'election')
     return render(request, 'wybory/voter/activity_history.html', {'votes': votes})
 
 

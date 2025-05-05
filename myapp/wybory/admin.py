@@ -22,6 +22,12 @@ class VoterAdmin(admin.ModelAdmin):
             voter.save()
     reject_verification.short_description = 'Odrzuć wybranych użytkowników'
 
+class VoteAdmin(admin.ModelAdmin):
+    list_display = ('election', 'candidate', 'timestamp')  
+    readonly_fields = ('election', 'candidate', 'timestamp')  
+    exclude = ('voter',)  
+
+admin.site.register(Vote, VoteAdmin)
 admin.site.register(Voter, VoterAdmin)
 admin.site.register(Candidate)
 admin.site.register(Election)

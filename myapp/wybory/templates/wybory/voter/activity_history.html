@@ -4,9 +4,18 @@
 
 {% block content %}
 <h2>Historia Aktywności</h2>
-<ul>
-    {% for vote in votes %}
-        <li>{{ vote.election.title }} - {{ vote.date }}</li>
-    {% endfor %}
-</ul>
+
+{% if votes %}
+    <ul>
+        {% for vote in votes %}
+            <li>
+                <strong>Wybory:</strong> {{ vote.election.title }}<br>
+                <strong>Kandydat:</strong> {{ vote.candidate.name }}<br>
+                <strong>Data głosowania:</strong> {{ vote.timestamp|date:"d M Y H:i" }}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Brak oddanych głosów.</p>
+{% endif %}
 {% endblock %}

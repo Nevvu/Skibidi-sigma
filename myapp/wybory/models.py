@@ -15,7 +15,8 @@ class ElectionType(models.Model):
 class Election(models.Model):
     title = models.CharField(max_length=100)
     election_type = models.ForeignKey(ElectionType, on_delete=models.CASCADE, related_name='elections')  
-    date = models.DateField()
+    date = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
     description = models.TextField()
 
     def __str__(self):
