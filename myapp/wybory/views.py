@@ -8,6 +8,10 @@ from .models import *
 from .forms import *
 import datetime
 from .forms import CustomUserCreationForm
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
+from django.db.models import Count
 
 # --- Public views ---
 def home(request):
@@ -49,14 +53,21 @@ def candidate_search(request):
         'elections': elections, 'candidates': candidates, 'selected_election_id': selected_election_id
     })
 
-def election_results(request, election_id):
-    results = Vote.objects.filter(election_id=election_id)\
-        .values('candidate_id').annotate(vote_count=models.Count('id'))
-    return render(request, 'wybory/public/wyniki_wyborow.html', {'results': results})
 
-def eligible_voters(request, election_id):
-    voters = Voter.objects.filter(election_id=election_id, eligible=True)
-    return render(request, 'wybory/uprawnieni_wyborcy.html', {'voters': voters})
+def election_results(request):
+    completed_elections = Election.objects.filter(end_time__lte=datetime.datetime.now())
+
+    results = []
+    for election in completed_elections:
+        votes = Vote.objects.filter(election=election).values('candidate__name').annotate(vote_count=Count('id')).order_by('-vote_count')
+        winner = votes.first() if votes else None
+        results.append({
+            'election': election,
+            'winner': winner['candidate__name'] if winner else "Brak głosów",
+            'votes': votes,
+        })
+
+    return render(request, 'wybory/public/results.html', {'results': results})
 
 # --- Voting process ---
 @login_required
@@ -103,6 +114,20 @@ def voter_panel(request): return render(request, 'wybory/voter/panel.html')
 
 
 
+# @login_required
+# def ballot(request):
+#     voter = Voter.objects.filter(user=request.user).first()
+#     if not voter:
+#         messages.error(request, "Nie znaleziono Twoich danych wyborcy.")
+#         return redirect('verify_identity')
+
+#     if not voter.eligible or voter.verification_status != 'approved':
+#         messages.error(request, "Musisz być zweryfikowany, aby móc głosować.")
+#         return redirect('voter_panel')
+
+#     elections = Election.objects.filter(date__gte=datetime.date.today())
+#     return render(request, 'wybory/voter/ballot.html', {'elections': elections, 'voter': voter})
+
 @login_required
 def ballot(request):
     voter = Voter.objects.filter(user=request.user).first()
@@ -115,7 +140,13 @@ def ballot(request):
         return redirect('voter_panel')
 
     elections = Election.objects.filter(date__gte=datetime.date.today())
-    return render(request, 'wybory/voter/ballot.html', {'elections': elections, 'voter': voter})
+    voted_elections = Vote.objects.filter(voter=voter).values_list('election_id', flat=True)
+
+    return render(request, 'wybory/voter/ballot.html', {
+        'elections': elections,
+        'voter': voter,
+        'voted_elections': voted_elections,  
+    })
 
 @login_required
 def activity_history(request):
@@ -156,3 +187,41 @@ def verify_identity(request):
         return redirect('voter_panel')  
 
     return render(request, 'wybory/voter/verify_identity.html', {'form': form})
+
+
+@login_required
+def generate_election_summary_pdf(request, election_id):
+    election = Election.objects.get(id=election_id)
+    candidates = Candidate.objects.filter(election=election)
+    votes = Vote.objects.filter(election=election)
+
+    candidate_support = []
+    total_votes = votes.count()
+    for candidate in candidates:
+        candidate_votes = votes.filter(candidate=candidate).count()
+        support_percentage = (candidate_votes / total_votes * 100) if total_votes > 0 else 0
+        candidate_support.append({
+            'name': candidate.name,
+            'party': candidate.party.name if candidate.party else "Bezpartyjny",
+            'votes': candidate_votes,
+            'support_percentage': round(support_percentage, 2),
+        })
+
+    context = {
+        'election': election,
+        'candidates': candidate_support,
+        'start_time': election.date,
+        'end_time': election.end_time,
+        'total_candidates': candidates.count(),
+        'total_votes': total_votes,
+    }
+
+    html = render_to_string('wybory/pdf/election_summary.html', context)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="podsumowanie_wyborow_{election_id}.pdf"'
+    pisa_status = pisa.CreatePDF(html.encode('utf-8'), dest=response, encoding='utf-8')
+
+    if pisa_status.err:
+        return HttpResponse('Błąd podczas generowania PDF', status=500)
+    return response

@@ -8,11 +8,11 @@
 <ul>
     {% for election in elections %}
         <li>
-            {{ election.date }} - {{ election.title }}
-            {% if voter.eligible and voter.verification_status == 'approved' %}
-                <a href="{% url 'cast_vote' election.id %}">Przejdź do głosowania</a>
+            <strong>{{ election.title }}</strong> ({{ election.date|date:"d M Y" }})
+            {% if election.id in voted_elections %}
+                <span style="color: green;">Głos oddany</span>
             {% else %}
-                <span style="color: red;">(Musisz być zweryfikowany, aby głosować)</span>
+                <a href="{% url 'cast_vote' election.id %}">Oddaj głos</a>
             {% endif %}
         </li>
     {% endfor %}
