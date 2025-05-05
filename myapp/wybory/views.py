@@ -12,6 +12,8 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 from django.db.models import Count
+from django.contrib.auth.decorators import login_required
+from .models import Notification
 
 # --- Public views ---
 def home(request):
@@ -225,3 +227,8 @@ def generate_election_summary_pdf(request, election_id):
     if pisa_status.err:
         return HttpResponse('Błąd podczas generowania PDF', status=500)
     return response
+
+@login_required
+def notifications(request):
+    user_notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'wybory/voter/notifications.html', {'notifications': user_notifications})

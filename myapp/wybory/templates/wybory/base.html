@@ -21,6 +21,7 @@
                         <i class="fas fa-chevron-down" style="font-size: 0.8em;"></i>
                     </button>
                     <div class="dropdown-content">
+                        <a href="{% url 'notifications' %}"> Powiadomienia ({{ unread_notifications_count }})</a>
                         <a href="{% url 'voter_panel' %}"><i class="fas fa-home"></i> Panel wyborcy</a>
                         <a href="{% url 'ballot' %}"><i class="fas fa-vote-yea"></i> Karta do głosowania</a>
                         <a href="{% url 'activity_history' %}"><i class="fas fa-history"></i> Historia aktywności</a>

@@ -23,4 +23,5 @@ urlpatterns = [
     path('voter/verify/', views.verify_identity, name='verify_identity'),
     path('cast_vote/<int:election_id>/', views.cast_vote, name='cast_vote'),
     path('election/<int:election_id>/summary_pdf/', views.generate_election_summary_pdf, name='election_summary_pdf'),
+    path('voter/notifications/', views.notifications, name='notifications'),
 ]
