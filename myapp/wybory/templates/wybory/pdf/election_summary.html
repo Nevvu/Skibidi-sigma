@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Podsumowanie Wyborów</title>
+    
     <style>
         @font-face {
             font-family: 'Roboto';
@@ -32,18 +33,18 @@
 <body>
     <h1>Podsumowanie Wyborów</h1>
     <h2>{{ election.title }}</h2>
-    <p><strong>Rozpoczecie glosowania:</strong> {{ start_time|date:"d M Y H:i" }}</p>
-    <p><strong>Zakonczenie glosowania:</strong> {{ end_time|date:"d M Y H:i" }}</p>
-    <p><strong>Liczba kandydatow:</strong> {{ total_candidates }}</p>
-    <p><strong>Laczna liczba glosow:</strong> {{ total_votes }}</p>
+    <p><strong>Rozpoczęcie głosowania:</strong> {{ start_time|date:"d M Y H:i" }}</p>
+    <p><strong>Zakończenie głosowania:</strong> {{ end_time|date:"d M Y H:i" }}</p>
+    <p><strong>Liczba kandydatów:</strong> {{ total_candidates }}</p>
+    <p><strong>Łączna liczba głosów:</strong> {{ total_votes }}</p>
 
-    <h2>Poparcie dla kandydatow</h2>
+    <h2>Poparcie dla kandydatów</h2>
     <table>
         <thead>
             <tr>
                 <th>Kandydat</th>
                 <th>Partia</th>
-                <th>Liczba glosow</th>
+                <th>Liczba głosów</th>
                 <th>Poparcie (%)</th>
             </tr>
         </thead>

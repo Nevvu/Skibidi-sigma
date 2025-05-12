@@ -57,13 +57,14 @@ MIDDLEWARE = [
 
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+
+MAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.poczta.onet.pl'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'twoj_email@gmail.com'  
-EMAIL_HOST_PASSWORD = 'twoje_haslo'  
-DEFAULT_FROM_EMAIL = 'twoj_email@gmail.com'
+EMAIL_HOST_USER = 'mateuszmilewski@onet.eu'
+EMAIL_HOST_PASSWORD = 'A1IH-THM9-PGK8-L5T1'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 ROOT_URLCONF = "myapp.urls"
 
@@ -104,9 +105,9 @@ WSGI_APPLICATION = "myapp.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'wybory', 
-        'USER': 'admin1', 
-        'PASSWORD': 'admin1',        
+        'NAME': 'ewybory', 
+        'USER': 'postgres', 
+        'PASSWORD': 'ctsg.pl7',        
         'HOST': 'localhost',        
         'PORT': '5432',            
     }
