@@ -8,7 +8,6 @@ from django.utils.html import format_html
 from .utils import send_notification_email
 from .forms import CustomUserCreationForm
 from .utils import create_notification
-from .utils import create_notification
 
 def election_results(request):
     completed_elections = Election.objects.filter(end_time__lte=datetime.datetime.now())
@@ -30,15 +29,14 @@ def election_results(request):
 
     return render(request, 'wybory/public/results.html', {'results': results})
 
+
 def approve_verification(self, request, queryset):
     for voter in queryset:
         voter.verification_status = 'approved'
         voter.eligible = True
         voter.save()
 
-        title = "Twoja weryfikacja została zatwierdzona"
-        message = "Twoja weryfikacja została pomyślnie zatwierdzona. Możesz teraz brać udział w głosowaniach."
-        create_notification(voter.user, title, message)
+approve_verification.short_description = 'Zatwierdź wybranych użytkowników'
 
 class ElectionAdmin(admin.ModelAdmin):
 
@@ -75,21 +73,6 @@ class VoteAdmin(admin.ModelAdmin):
     list_display = ('election', 'candidate', 'timestamp')  
     readonly_fields = ('election', 'candidate', 'timestamp')  
     exclude = ('voter',)  
-
-
-
-def approve_verification(self, request, queryset):
-    for voter in queryset:
-        voter.verification_status = 'approved'
-        voter.eligible = True
-        voter.save()
-
-        subject = "Twoja weryfikacja została zatwierdzona"
-        message = f"Witaj {voter.name},\n\nTwoja weryfikacja została pomyślnie zatwierdzona. Możesz teraz brać udział w głosowaniach.\n\nPozdrawiamy,\nZespół Wybory"
-        send_notification_email(subject, message, [voter.email])
-
-approve_verification.short_description = 'Zatwierdź wybranych użytkowników'
-
 
 def election_results(request):
     completed_elections = Election.objects.filter(end_time__lte=datetime.datetime.now())

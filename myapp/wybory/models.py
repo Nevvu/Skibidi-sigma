@@ -14,6 +14,7 @@ class Notification(models.Model):
     def __str__(self):
         return f"Powiadomienie dla {self.user.username}: {self.title}"
 
+
 class ElectionType(models.Model):
     name = models.CharField(max_length=50, unique=True)  
     description = models.TextField(null=True, blank=True)  
@@ -53,7 +54,7 @@ class Candidate(models.Model):
 
 
 class Voter(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True)
     name = models.CharField(max_length=100)  
     last_name = models.CharField(max_length=100, blank=True, null=True)  
     email = models.EmailField(unique=True)

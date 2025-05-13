@@ -25,7 +25,8 @@ SECRET_KEY = "django-insecure-*yufsc&!+o%k71l*cnc6-g89#dli^o$yb&vr@2!^nv6657=a_%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  
+
 
 
 # Application definition
@@ -63,7 +64,7 @@ EMAIL_HOST = 'smtp.poczta.onet.pl'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'mateuszmilewski@onet.eu'
-EMAIL_HOST_PASSWORD = 'A1IH-THM9-PGK8-L5T1'
+EMAIL_HOST_PASSWORD = 'Ctsgpl78'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 ROOT_URLCONF = "myapp.urls"
@@ -137,7 +138,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "pl"
 
 TIME_ZONE = 'Europe/Warsaw'
 

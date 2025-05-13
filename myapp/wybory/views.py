@@ -13,6 +13,12 @@ from django.template.loader import render_to_string
 from django.db.models import Count
 from weasyprint import HTML
 from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404
+from .models import Notification
+from wybory.utils import send_notification_email
+from wybory.utils import create_notification
+
+
 
 
 # --- Public views ---
@@ -72,6 +78,8 @@ def election_results(request):
     return render(request, 'wybory/public/results.html', {'results': results})
 
 # --- Voting process ---
+
+
 @login_required
 def cast_vote(request, election_id):
     voter = Voter.objects.filter(user=request.user).first()
@@ -100,6 +108,11 @@ def cast_vote(request, election_id):
 
         Vote.objects.create(voter=voter, candidate_id=candidate_id, election=election)
         messages.success(request, "Twój głos został oddany pomyślnie.")
+
+        title = "Oddano głos"
+        message = f"Twój głos w wyborach \"{election.title}\" został pomyślnie zarejestrowany."
+        create_notification(request.user, title, message)
+
         return redirect('voter_panel')
 
     candidates = election.candidates.all()
@@ -171,47 +184,14 @@ def verify_identity(request):
         voter.verification_status = 'pending'  
         voter.save()
         messages.success(request, "Twoje dane zostały przesłane do weryfikacji.")
+        send_notification_email("Weryfikacja wyborcy", f"Witaj {voter.name},\n\nTwoje dane zostały przesłane do weryfikacji.", [voter.email])
+        title = "Weryfikacja wyborcy"
+        message = "Twoje dane zostały przesłane do weryfikacji. Oczekuj na dalsze instrukcje."
+        create_notification(request.user, title, message)
         return redirect('voter_panel')  
 
     return render(request, 'wybory/voter/verify_identity.html', {'form': form})
 
-
-# @login_required
-# def generate_election_summary_pdf(request, election_id):
-#     election = Election.objects.get(id=election_id)
-#     candidates = Candidate.objects.filter(election=election)
-#     votes = Vote.objects.filter(election=election)
-
-#     candidate_support = []
-#     total_votes = votes.count()
-#     for candidate in candidates:
-#         candidate_votes = votes.filter(candidate=candidate).count()
-#         support_percentage = (candidate_votes / total_votes * 100) if total_votes > 0 else 0
-#         candidate_support.append({
-#             'name': candidate.name,
-#             'party': candidate.party.name if candidate.party else "Bezpartyjny",
-#             'votes': candidate_votes,
-#             'support_percentage': round(support_percentage, 2),
-#         })
-
-#     context = {
-#         'election': election,
-#         'candidates': candidate_support,
-#         'start_time': election.date,
-#         'end_time': election.end_time,
-#         'total_candidates': candidates.count(),
-#         'total_votes': total_votes,
-#     }
-
-#     html = render_to_string('wybory/pdf/election_summary.html', context)
-
-#     response = HttpResponse(content_type='application/pdf')
-#     response['Content-Disposition'] = f'attachment; filename="podsumowanie_wyborow_{election_id}.pdf"'
-#     pisa_status = pisa.CreatePDF(html.encode('utf-8'), dest=response, encoding='utf-8')
-
-#     if pisa_status.err:
-#         return HttpResponse('Błąd podczas generowania PDF', status=500)
-#     return response
 
 @login_required
 def generate_election_summary_pdf(request, election_id):
@@ -250,9 +230,22 @@ def generate_election_summary_pdf(request, election_id):
     return response
 
 
+
+
+
+
 @login_required
 def notifications(request):
+    if request.method == 'POST':
+        notification_id = request.POST.get('notification_id')
+        print(f"Received notification_id: {notification_id}")  
+        notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+        print(f"Notification found: {notification}")  
+        if not notification.is_read:
+            notification.is_read = True
+            notification.save()
+            print(f"Notification {notification_id} marked as read")  
+        return JsonResponse({'status': 'success', 'message': 'Powiadomienie oznaczone jako przeczytane'})
+
     user_notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'wybory/voter/notifications.html', {'notifications': user_notifications})
-
-

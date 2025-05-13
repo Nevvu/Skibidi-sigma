@@ -13,8 +13,36 @@
             <small>Dodano: {{ notification.created_at|date:"d M Y H:i" }}</small>
             {% if not notification.is_read %}
                 <span style="color: red;">(Nieprzeczytane)</span>
+                <button class="mark-as-read" data-id="{{ notification.id }}">Oznacz jako przeczytane</button>
+            {% else %}
+                <span style="color: green;">(Przeczytane)</span>
             {% endif %}
         </li>
     {% endfor %}
 </ul>
+{% csrf_token %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const buttons = document.querySelectorAll('.mark-as-read');
+    buttons.forEach(button => {
+        button.addEventListener('click', function () {
+            const notificationId = this.getAttribute('data-id');
+            fetch("{% url 'notifications' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `notification_id=${notificationId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload();
+                }
+            });
+        });
+    });
+});
+</script>
 {% endblock %}
