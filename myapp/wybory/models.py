@@ -4,6 +4,17 @@ from django.dispatch import receiver
 from django.contrib.auth.models import User
 
 
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Powiadomienie dla {self.user.username}: {self.title}"
+
+
 class ElectionType(models.Model):
     name = models.CharField(max_length=50, unique=True)  
     description = models.TextField(null=True, blank=True)  
@@ -15,7 +26,8 @@ class ElectionType(models.Model):
 class Election(models.Model):
     title = models.CharField(max_length=100)
     election_type = models.ForeignKey(ElectionType, on_delete=models.CASCADE, related_name='elections')  
-    date = models.DateField()
+    date = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
     description = models.TextField()
 
     def __str__(self):
@@ -42,7 +54,7 @@ class Candidate(models.Model):
 
 
 class Voter(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True)
     name = models.CharField(max_length=100)  
     last_name = models.CharField(max_length=100, blank=True, null=True)  
     email = models.EmailField(unique=True)

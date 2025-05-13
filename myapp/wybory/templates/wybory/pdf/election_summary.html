@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Podsumowanie Wyborów</title>
+    
+    <style>
+        @font-face {
+            font-family: 'Roboto';
+            src: url('/static/fonts/Roboto-Regular.ttf') format('truetype');
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Podsumowanie Wyborów</h1>
+    <h2>{{ election.title }}</h2>
+    <p><strong>Rozpoczęcie głosowania:</strong> {{ start_time|date:"d M Y H:i" }}</p>
+    <p><strong>Zakończenie głosowania:</strong> {{ end_time|date:"d M Y H:i" }}</p>
+    <p><strong>Liczba kandydatów:</strong> {{ total_candidates }}</p>
+    <p><strong>Łączna liczba głosów:</strong> {{ total_votes }}</p>
+
+    <h2>Poparcie dla kandydatów</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Kandydat</th>
+                <th>Partia</th>
+                <th>Liczba głosów</th>
+                <th>Poparcie (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for candidate in candidates %}
+            <tr>
+                <td>{{ candidate.name }}</td>
+                <td>{{ candidate.party }}</td>
+                <td>{{ candidate.votes }}</td>
+                <td>{{ candidate.support_percentage }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,8 +1,27 @@
 {% extends 'wybory/base.html' %}
 
-{% block title %}Wyniki{% endblock %}
+{% block title %}Wyniki Wyborów{% endblock %}
 
 {% block content %}
-<h2>Wyniki wyborów</h2>
-<p>Wyniki wyborów będą tutaj wyświetlane.</p>
+<h2>Wyniki Wyborów</h2>
+
+{% if results %}
+    <ul>
+        {% for result in results %}
+            <li>
+                <strong>{{ result.election.title }}</strong> ({{ result.election.date|date:"d M Y" }})<br>
+                <strong>Zwycięzca:</strong> {{ result.winner }}<br>
+                <strong>Wyniki:</strong>
+                <ul>
+                    {% for vote in result.votes %}
+                        <li>{{ vote.candidate__name }}: {{ vote.vote_count }} głosów</li>
+                    {% endfor %}
+                </ul>
+                <a href="{% url 'election_summary_pdf' result.election.id %}" target="_blank">Pobierz PDF z wynikami</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Brak zakończonych wyborów.</p>
+{% endif %}
 {% endblock %}
