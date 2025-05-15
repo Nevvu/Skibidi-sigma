@@ -72,7 +72,6 @@ class Voter(models.Model):
         return f"{self.name} {self.last_name}"
 
 class Vote(models.Model):
-    voter = models.ForeignKey(Voter, on_delete = models.CASCADE)
     candidate = models.ForeignKey(Candidate, on_delete = models.CASCADE)
     election = models.ForeignKey(Election, on_delete = models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add = True)    

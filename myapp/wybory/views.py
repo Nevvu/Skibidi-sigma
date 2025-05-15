@@ -7,7 +7,7 @@ from django.contrib import messages
 from .models import *
 from .forms import *
 import datetime
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, CastVoteForm
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.db.models import Count
@@ -17,6 +17,7 @@ from django.shortcuts import render, get_object_or_404
 from .models import Notification
 from wybory.utils import send_notification_email
 from wybory.utils import create_notification
+
 
 
 
@@ -80,73 +81,53 @@ def election_results(request):
 # --- Voting process ---
 
 
-@login_required
-def cast_vote(request, election_id):
-    voter = Voter.objects.filter(user=request.user).first()
-    if not voter:
-        messages.error(request, "Nie znaleziono Twoich danych wyborcy.")
-        return redirect('voter_panel')
-
-    if not voter.eligible or voter.verification_status != 'approved':
-        messages.error(request, "Musisz być zweryfikowany, aby móc głosować.")
-        return redirect('voter_panel')
-
-    election = Election.objects.filter(id=election_id, date__gte=datetime.date.today()).first()
-    if not election:
-        messages.error(request, "Nie znaleziono wyborów lub są one niedostępne.")
-        return redirect('voter_panel')
-
-    if request.method == 'POST':
-        candidate_id = request.POST.get('candidate_id')
-        if not Candidate.objects.filter(id=candidate_id, election=election).exists():
-            messages.error(request, "Wybrany kandydat nie istnieje.")
-            return redirect('cast_vote', election_id=election_id)
-
-        if Vote.objects.filter(voter=voter, election=election).exists():
-            messages.error(request, "Już oddałeś głos w tych wyborach.")
-            return redirect('voter_panel')
-
-        Vote.objects.create(voter=voter, candidate_id=candidate_id, election=election)
-        messages.success(request, "Twój głos został oddany pomyślnie.")
-
-        title = "Oddano głos"
-        message = f"Twój głos w wyborach \"{election.title}\" został pomyślnie zarejestrowany."
-        create_notification(request.user, title, message)
-
-        return redirect('voter_panel')
-
-    candidates = election.candidates.all()
-    return render(request, 'wybory/voter/cast_vote.html', {'election': election, 'candidates': candidates})
-
 def election_detail(request, election_id):
     election = Election.objects.get(id=election_id)
     candidates = election.candidates.all()
     return render(request, 'wybory/voter/election_detail.html', {'election': election, 'candidates': candidates})
 
+@login_required
+def cast_vote(request, election_id):
+    election = Election.objects.filter(id=election_id, date__gte=datetime.date.today()).first()
+    if not election:
+        messages.error(request, "Nie znaleziono wyborów lub są one niedostępne.")
+        return redirect('voter_panel')
+
+    if request.session.get(f'voted_{election_id}', False):
+        messages.error(request, "Już oddałeś głos w tych wyborach.")
+        return redirect('voter_panel')
+
+    if request.method == 'POST':
+        form = CastVoteForm(request.POST, election=election)
+        if form.is_valid():
+            candidate = form.cleaned_data['candidate']
+            Vote.objects.create(candidate=candidate, election=election)
+
+            request.session[f'voted_{election_id}'] = True
+
+            messages.success(request, "Twój głos został oddany pomyślnie.")
+            return redirect('voter_panel')
+    else:
+        form = CastVoteForm(election=election)
+
+    return render(request, 'wybory/voter/cast_vote.html', {'election': election, 'form': form})
 # --- Voter-only views ---
 @login_required
 def voter_panel(request): return render(request, 'wybory/voter/panel.html')
 
-
 @login_required
 def ballot(request):
-    voter = Voter.objects.filter(user=request.user).first()
-    if not voter:
-        messages.error(request, "Nie znaleziono Twoich danych wyborcy.")
-        return redirect('verify_identity')
-
-    if not voter.eligible or voter.verification_status != 'approved':
-        messages.error(request, "Musisz być zweryfikowany, aby móc głosować.")
-        return redirect('voter_panel')
-
     elections = Election.objects.filter(date__gte=datetime.date.today())
-    voted_elections = Vote.objects.filter(voter=voter).values_list('election_id', flat=True)
+    voted_elections = [
+        election_id for election_id in elections.values_list('id', flat=True)
+        if request.session.get(f'voted_{election_id}', False)
+    ]
 
     return render(request, 'wybory/voter/ballot.html', {
         'elections': elections,
-        'voter': voter,
-        'voted_elections': voted_elections,  
+        'voted_elections': voted_elections,
     })
+
 
 @login_required
 def activity_history(request):

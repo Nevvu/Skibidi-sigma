@@ -10,21 +10,7 @@
 
 <form method="post">
     {% csrf_token %}
-    <ul>
-        {% for candidate in candidates %}
-            <li>
-                <label>
-                    <input type="radio" name="candidate_id" value="{{ candidate.id }}">
-                    {{ candidate.name }}
-                    {% if candidate.party %}
-                        ({{ candidate.party.name }})
-                    {% else %}
-                        (Bezpartyjny)
-                    {% endif %}
-                </label>
-            </li>
-        {% endfor %}
-    </ul>
+    {{ form.as_p }}
     <button type="submit">Oddaj głos</button>
 </form>
 

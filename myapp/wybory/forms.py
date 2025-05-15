@@ -45,3 +45,17 @@ class EditProfileForm(forms.ModelForm):
             'address': forms.TextInput(attrs={'placeholder': 'Adres'}),
             'phone_number': forms.TextInput(attrs={'placeholder': 'Numer telefonu'}),
         }
+
+class CastVoteForm(forms.Form):
+    candidate = forms.ModelChoiceField(
+        queryset=Candidate.objects.none(),
+        widget=forms.RadioSelect,
+        empty_label=None,
+        label="Wybierz kandydata"
+    )
+
+    def __init__(self, *args, **kwargs):
+        election = kwargs.pop('election', None)
+        super().__init__(*args, **kwargs)
+        if election:
+            self.fields['candidate'].queryset = Candidate.objects.filter(election=election)
