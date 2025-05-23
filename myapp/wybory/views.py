@@ -112,36 +112,6 @@ def cast_vote(request, election_id):
 
     return render(request, 'wybory/voter/cast_vote.html', {'election': election, 'form': form})
 
-# @login_required
-# def cast_vote(request, election_id):
-#     election = Election.objects.filter(id=election_id, date__gte=datetime.date.today()).first()
-#     if not election:
-#         messages.error(request, "Nie znaleziono wyborów lub są one niedostępne.")
-#         return redirect('voter_panel')
-
-
-#     if request.session.get(f'voted_{election_id}', False):
-#         messages.error(request, "Już oddałeś głos w tych wyborach.")
-#         return redirect('voter_panel')
-
-#     if request.method == 'POST':
-#         form = CastVoteForm(request.POST, election=election)
-#         if form.is_valid():
-#             candidate = form.cleaned_data['candidate']
-
-#             Vote.objects.create(candidate=candidate, election=election)
-
-
-#             request.session[f'voted_{election_id}'] = True
-
-#             messages.success(request, "Twój głos został oddany pomyślnie.")
-#             return redirect('voter_panel')
-#     else:
-#         form = CastVoteForm(election=election)
-
-#     return render(request, 'wybory/voter/cast_vote.html', {'election': election, 'form': form})
-
-
 # --- Voter-only views ---
 @login_required
 def voter_panel(request): return render(request, 'wybory/voter/panel.html')
@@ -261,3 +231,32 @@ def notifications(request):
 
     user_notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'wybory/voter/notifications.html', {'notifications': user_notifications})
+
+from django.contrib.auth.decorators import user_passes_test
+
+# --- Moderator-only views ---
+def is_moderator(user):
+    return user.groups.filter(name='Moderator').exists()
+
+@login_required
+@user_passes_test(is_moderator)
+def verify_voters(request):
+    voters = Voter.objects.filter(verification_status='pending')
+
+    if request.method == 'POST':
+        voter_id = request.POST.get('voter_id')
+        action = request.POST.get('action')  # 'approve' lub 'reject'
+        voter = get_object_or_404(Voter, id=voter_id)
+
+        if action == 'approve':
+            voter.verification_status = 'approved'
+            voter.save()
+            messages.success(request, f"Użytkownik {voter.name} został zatwierdzony.")
+        elif action == 'reject':
+            voter.verification_status = 'rejected'
+            voter.save()
+            messages.success(request, f"Użytkownik {voter.name} został odrzucony.")
+
+        return redirect('verify_voters')
+
+    return render(request, 'wybory/moderator/verify_voters.html', {'voters': voters})

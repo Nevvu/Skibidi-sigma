@@ -37,7 +37,8 @@ class Election(models.Model):
 class Party(models.Model):
     name = models.CharField(max_length=100, unique=True)  
     description = models.TextField(null=True, blank=True) 
-    founded_date = models.DateField(null=True, blank=True) 
+    founded_date = models.DateField(null=True, blank=True)
+    election = models.ForeignKey(Election, related_name='parties', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -49,8 +50,6 @@ class Candidate(models.Model):
 
     def __str__(self):
         return self.name
-
-
 
 
 class Voter(models.Model):

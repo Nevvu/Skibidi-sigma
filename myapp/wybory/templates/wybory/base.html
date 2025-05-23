@@ -26,6 +26,11 @@
                         <a href="{% url 'ballot' %}"><i class="fas fa-vote-yea"></i> Karta do głosowania</a>
                         <a href="{% url 'activity_history' %}"><i class="fas fa-history"></i> Historia aktywności</a>
                         <a href="{% url 'profile' %}"><i class="fas fa-user-edit"></i> Profil</a>
+                        {% load custom_tags %}
+
+                        {% if user|is_in_group:"Moderator" %}
+                            <a href="{% url 'verify_voters' %}"><i class="fas fa-user-edit"></i> Panel moderatora</a>
+                        {% endif %}
                         <form method="post" action="{% url 'logout' %}" style="margin: 0;">
                             {% csrf_token %}
                             <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Wyloguj się</button>
