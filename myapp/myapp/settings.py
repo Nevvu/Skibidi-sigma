@@ -105,17 +105,16 @@ WSGI_APPLICATION = "myapp.wsgi.application"
 
 DATABASES = {
     'default': {
-<<<<<<< HEAD
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-=======
+
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ewybory', 
         'USER': 'postgres', 
         'PASSWORD': 'ctsg.pl7',        
         'HOST': 'localhost',        
         'PORT': '5432',            
->>>>>>> origin/dev
+
     }
 }
 
