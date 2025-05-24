@@ -7,7 +7,20 @@ from django.contrib import messages
 from .models import *
 from .forms import *
 import datetime
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, CastVoteForm
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django.db.models import Count
+from weasyprint import HTML
+from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404
+from .models import Notification
+from wybory.utils import send_notification_email
+from wybory.utils import create_notification
+
+
+
+
 
 # --- Public views ---
 def home(request):
@@ -17,7 +30,7 @@ def home(request):
 def signup(request):
     form = CustomUserCreationForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        user = form.save()  # Tworzy użytkownika i wywołuje sygnał `create_voter`
+        user = form.save()  
         return redirect('login')
     return render(request, 'wybory/public/signup.html', {'form': form})
 
@@ -30,7 +43,7 @@ def election_list(request):
     return render(request, 'wybory/public/election_list.html', {'elections': elections})
 
 def election_calendar(request):
-    elections = Election.objects.all().order_by('date')
+    elections = Election.objects.filter(date__gte=datetime.date.today()).order_by('date')
     return render(request, 'wybory/public/election_calendar.html', {'elections': elections})
 
 def parties(request):
@@ -49,56 +62,82 @@ def candidate_search(request):
         'elections': elections, 'candidates': candidates, 'selected_election_id': selected_election_id
     })
 
-def election_results(request, election_id):
-    results = Vote.objects.filter(election_id=election_id)\
-        .values('candidate_id').annotate(vote_count=models.Count('id'))
-    return render(request, 'wybory/public/wyniki_wyborow.html', {'results': results})
 
-def eligible_voters(request, election_id):
-    voters = Voter.objects.filter(election_id=election_id, eligible=True)
-    return render(request, 'wybory/uprawnieni_wyborcy.html', {'voters': voters})
+def election_results(request):
+    completed_elections = Election.objects.filter(end_time__lte=datetime.datetime.now())
+
+    results = []
+    for election in completed_elections:
+        votes = Vote.objects.filter(election=election).values('candidate__name').annotate(vote_count=Count('id')).order_by('-vote_count')
+        winner = votes.first() if votes else None
+        results.append({
+            'election': election,
+            'winner': winner['candidate__name'] if winner else "Brak głosów",
+            'votes': votes,
+        })
+
+    return render(request, 'wybory/public/results.html', {'results': results})
 
 # --- Voting process ---
-def cast_vote(request, election_id):
-    if request.method == 'POST':
-        voter_id = request.POST.get('voter_id')
-        candidate_id = request.POST.get('candidate_id')
-        if Voter.objects.filter(id=voter_id, eligible=True).exists():
-            Vote.objects.create(voter_id=voter_id, candidate_id=candidate_id, election_id=election_id)
-            return JsonResponse({'status': 'success', 'message': 'Vote cast successfully.'})
-        return JsonResponse({'status': 'error', 'message': 'Voter not eligible.'})
-    return render(request, 'wybory/voter/vote.html', {'election_id': election_id})
+
 
 def election_detail(request, election_id):
     election = Election.objects.get(id=election_id)
     candidates = election.candidates.all()
     return render(request, 'wybory/voter/election_detail.html', {'election': election, 'candidates': candidates})
 
+@login_required
+def cast_vote(request, election_id):
+    election = Election.objects.filter(id=election_id, date__gte=datetime.date.today()).first()
+    if not election:
+        messages.error(request, "Nie znaleziono wyborów lub są one niedostępne.")
+        return redirect('voter_panel')
+
+    if request.session.get(f'voted_{election_id}', False):
+        messages.error(request, "Już oddałeś głos w tych wyborach.")
+        return redirect('voter_panel')
+
+    if request.method == 'POST':
+        form = CastVoteForm(request.POST, election=election)
+        if form.is_valid():
+            candidate = form.cleaned_data['candidate']
+            Vote.objects.create(candidate=candidate, election=election)
+
+            request.session[f'voted_{election_id}'] = True
+
+            messages.success(request, "Twój głos został oddany pomyślnie.")
+            return redirect('voter_panel')
+    else:
+        form = CastVoteForm(election=election)
+
+    return render(request, 'wybory/voter/cast_vote.html', {'election': election, 'form': form})
+
 # --- Voter-only views ---
 @login_required
 def voter_panel(request): return render(request, 'wybory/voter/panel.html')
 
-
-
 @login_required
 def ballot(request):
-    voter = Voter.objects.filter(user=request.user).first()
-    if not voter:
-        return redirect('verify_identity')  
-
-    if not voter.eligible or voter.verification_status != 'approved':
-        messages.error(request, "Musisz być zweryfikowany, aby móc głosować.")
-        return redirect('voter_panel')  
-
     elections = Election.objects.filter(date__gte=datetime.date.today())
-    return render(request, 'wybory/voter/ballot.html', {'elections': elections})
+    voted_elections = [
+        election_id for election_id in elections.values_list('id', flat=True)
+        if request.session.get(f'voted_{election_id}', False)
+    ]
+
+    return render(request, 'wybory/voter/ballot.html', {
+        'elections': elections,
+        'voted_elections': voted_elections,
+    })
+
 
 @login_required
 def activity_history(request):
-    voter = Voter.objects.filter(email=request.user.email).first()
+    voter = Voter.objects.filter(user=request.user).first()
     if not voter:
-        return JsonResponse({'status': 'error', 'message': 'Nie znaleziono użytkownika w bazie wyborców.'})
-    votes = Vote.objects.filter(voter=voter)
+        messages.error(request, "Nie znaleziono Twoich danych wyborcy.")
+        return redirect('voter_panel')  
+
+    votes = Vote.objects.filter(voter=voter).select_related('candidate', 'election')
     return render(request, 'wybory/voter/activity_history.html', {'votes': votes})
 
 
@@ -127,6 +166,97 @@ def verify_identity(request):
         voter.verification_status = 'pending'  
         voter.save()
         messages.success(request, "Twoje dane zostały przesłane do weryfikacji.")
+        send_notification_email("Weryfikacja wyborcy", f"Witaj {voter.name},\n\nTwoje dane zostały przesłane do weryfikacji.", [voter.email])
+        title = "Weryfikacja wyborcy"
+        message = "Twoje dane zostały przesłane do weryfikacji. Oczekuj na dalsze instrukcje."
+        create_notification(request.user, title, message)
         return redirect('voter_panel')  
 
     return render(request, 'wybory/voter/verify_identity.html', {'form': form})
+
+
+@login_required
+def generate_election_summary_pdf(request, election_id):
+    election = Election.objects.get(id=election_id)
+    candidates = Candidate.objects.filter(election=election)
+    votes = Vote.objects.filter(election=election)
+
+    candidate_support = []
+    total_votes = votes.count()
+    for candidate in candidates:
+        candidate_votes = votes.filter(candidate=candidate).count()
+        support_percentage = (candidate_votes / total_votes * 100) if total_votes > 0 else 0
+        candidate_support.append({
+            'name': candidate.name,
+            'party': candidate.party.name if candidate.party else "Bezpartyjny",
+            'votes': candidate_votes,
+            'support_percentage': round(support_percentage, 2),
+        })
+
+    context = {
+        'election': election,
+        'candidates': candidate_support,
+        'start_time': election.date,
+        'end_time': election.end_time,
+        'total_candidates': candidates.count(),
+        'total_votes': total_votes,
+    }
+
+    html_string = render_to_string('wybory/pdf/election_summary.html', context)
+    html = HTML(string=html_string, base_url=request.build_absolute_uri())
+
+    pdf_file = html.write_pdf()
+
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="podsumowanie_wyborow_{election_id}.pdf"'
+    return response
+
+
+
+
+
+
+@login_required
+def notifications(request):
+    if request.method == 'POST':
+        notification_id = request.POST.get('notification_id')
+        print(f"Received notification_id: {notification_id}")  
+        notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+        print(f"Notification found: {notification}")  
+        if not notification.is_read:
+            notification.is_read = True
+            notification.save()
+            print(f"Notification {notification_id} marked as read")  
+        return JsonResponse({'status': 'success', 'message': 'Powiadomienie oznaczone jako przeczytane'})
+
+    user_notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'wybory/voter/notifications.html', {'notifications': user_notifications})
+
+from django.contrib.auth.decorators import user_passes_test
+
+# --- Moderator-only views ---
+def is_moderator(user):
+    return user.groups.filter(name='Moderator').exists()
+
+@login_required
+@user_passes_test(is_moderator)
+def verify_voters(request):
+    voters = Voter.objects.filter(verification_status='pending')
+
+    if request.method == 'POST':
+        voter_id = request.POST.get('voter_id')
+        action = request.POST.get('action')  # 'approve' lub 'reject'
+        voter = get_object_or_404(Voter, id=voter_id)
+
+        if action == 'approve':
+            voter.verification_status = 'approved'
+            voter.save()
+            messages.success(request, f"Użytkownik {voter.name} został zatwierdzony.")
+        elif action == 'reject':
+            voter.verification_status = 'rejected'
+            voter.save()
+            messages.success(request, f"Użytkownik {voter.name} został odrzucony.")
+
+        return redirect('verify_voters')
+
+    return render(request, 'wybory/moderator/verify_voters.html', {'voters': voters})

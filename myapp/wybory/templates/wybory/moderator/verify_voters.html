@@ -1,0 +1,37 @@
+{% extends 'wybory/base.html' %}
+
+{% block title %}Weryfikacja Użytkowników{% endblock %}
+
+{% block content %}
+<h2>Weryfikacja Użytkowników</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Imię i nazwisko</th>
+            <th>Email</th>
+            <th>Akcja</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for voter in voters %}
+        <tr>
+            <td>{{ voter.name }}</td>
+            <td>{{ voter.email }}</td>
+            <td>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="voter_id" value="{{ voter.id }}">
+                    <button type="submit" name="action" value="approve">Zatwierdź</button>
+                </form>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="voter_id" value="{{ voter.id }}">
+                    <button type="submit" name="action" value="reject">Odrzuć</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

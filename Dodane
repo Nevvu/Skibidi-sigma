@@ -1,0 +1,91 @@
+1. Powiadomienia w aplikacji
+Model Notification:
+
+Stworzono model Notification do przechowywania powiadomień dla użytkowników.
+Pola modelu:
+user: Użytkownik, do którego skierowane jest powiadomienie.
+title: Tytuł powiadomienia.
+message: Treść powiadomienia.
+created_at: Data i czas utworzenia powiadomienia.
+is_read: Flaga wskazująca, czy powiadomienie zostało przeczytane.
+Migracje bazy danych:
+
+Wykonano migracje, aby dodać model Notification do bazy danych.
+Funkcja pomocnicza create_notification:
+
+Stworzono funkcję w pliku utils.py, która umożliwia łatwe tworzenie powiadomień.
+Tworzenie powiadomień:
+
+Dodano powiadomienia w odpowiednich miejscach:
+Zatwierdzenie weryfikacji użytkownika: Po zatwierdzeniu weryfikacji użytkownik otrzymuje powiadomienie.
+Zakończenie głosowania: Po zakończeniu głosowania użytkownicy otrzymują powiadomienie z wynikami.
+Widok notifications:
+
+Stworzono widok w pliku views.py, który pobiera powiadomienia dla zalogowanego użytkownika i renderuje je w szablonie.
+Szablon notifications.html:
+
+Stworzono szablon do wyświetlania powiadomień użytkownika.
+Powiadomienia są wyświetlane z tytułem, treścią i datą utworzenia.
+Nieprzeczytane powiadomienia są wyróżnione.
+Licznik nieprzeczytanych powiadomień:
+
+Dodano procesor kontekstowy w pliku context_processors.py, który oblicza liczbę nieprzeczytanych powiadomień.
+Licznik jest wyświetlany w menu nawigacyjnym w szablonie base.html.
+2. Wysyłanie e-maili
+Konfiguracja e-maili w settings.py:
+
+Skonfigurowano serwer SMTP (np. Gmail) do wysyłania e-maili.
+Funkcja send_notification_email:
+
+Stworzono funkcję w pliku utils.py, która umożliwia wysyłanie e-maili.
+Wysyłanie e-maili w odpowiednich miejscach:
+
+Zatwierdzenie weryfikacji użytkownika: Po zatwierdzeniu weryfikacji użytkownik otrzymuje e-mail z informacją.
+Zakończenie głosowania: Po zakończeniu głosowania użytkownicy otrzymują e-mail z wynikami.
+3. Inne zmiany
+Widok election_results:
+
+Dodano logikę do obliczania wyników zakończonych wyborów.
+Dodano wysyłanie powiadomień i e-maili po zakończeniu głosowania.
+Szablon base.html:
+
+Dodano link do strony powiadomień z licznikiem nieprzeczytanych powiadomień.
+Ścieżki URL:
+
+Dodano ścieżkę URL do widoku notifications.
+Pliki, które zostały zmodyfikowane lub stworzone
+models.py:
+
+Dodano model Notification.
+utils.py:
+
+Dodano funkcje create_notification i send_notification_email.
+views.py:
+
+Dodano widok notifications.
+Zaktualizowano widok election_results.
+admin.py:
+
+Dodano tworzenie powiadomień w metodzie approve_verification.
+notifications.html:
+
+Stworzono szablon do wyświetlania powiadomień.
+base.html:
+
+Dodano licznik nieprzeczytanych powiadomień w menu.
+urls.py:
+
+Dodano ścieżkę URL do widoku notifications.
+context_processors.py:
+
+Stworzono procesor kontekstowy do liczenia nieprzeczytanych powiadomień.
+settings.py:
+
+Skonfigurowano serwer SMTP.
+Dodano procesor kontekstowy do sekcji TEMPLATES.
+Testowanie
+Przetestowano:
+Tworzenie powiadomień w bazie danych.
+Wyświetlanie powiadomień w interfejsie użytkownika.
+Licznik nieprzeczytanych powiadomień w menu.
+Wysyłanie e-maili w odpowiednich scenariuszach.

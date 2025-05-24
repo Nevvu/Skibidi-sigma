@@ -40,10 +40,22 @@ class VerificationForm(forms.ModelForm):
 class EditProfileForm(forms.ModelForm):
     class Meta:
         model = Voter
-        fields = ['name', 'last_name', 'address', 'phone_number']
+        fields = ['address', 'phone_number']
         widgets = {
-            'name': forms.TextInput(attrs={'placeholder': 'Imię'}),
-            'last_name': forms.TextInput(attrs={'placeholder': 'Nazwisko'}),
             'address': forms.TextInput(attrs={'placeholder': 'Adres'}),
             'phone_number': forms.TextInput(attrs={'placeholder': 'Numer telefonu'}),
         }
+
+class CastVoteForm(forms.Form):
+    candidate = forms.ModelChoiceField(
+        queryset=Candidate.objects.none(),
+        widget=forms.RadioSelect,
+        empty_label=None,
+        label="Wybierz kandydata"
+    )
+
+    def __init__(self, *args, **kwargs):
+        election = kwargs.pop('election', None)
+        super().__init__(*args, **kwargs)
+        if election:
+            self.fields['candidate'].queryset = Candidate.objects.filter(election=election)

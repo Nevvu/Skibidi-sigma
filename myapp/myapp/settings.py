@@ -25,7 +25,8 @@ SECRET_KEY = "django-insecure-*yufsc&!+o%k71l*cnc6-g89#dli^o$yb&vr@2!^nv6657=a_%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  
+
 
 
 # Application definition
@@ -55,23 +56,19 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+
+
+
+MAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.poczta.onet.pl'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'mateuszmilewski@onet.eu'
+EMAIL_HOST_PASSWORD = 'M6AF-9KSA-SKIX-W00X'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 ROOT_URLCONF = "myapp.urls"
 
-# TEMPLATES = [
-#     {
-#         "BACKEND": "django.template.backends.django.DjangoTemplates",
-#         "DIRS": [],
-#         "APP_DIRS": True,
-#         "OPTIONS": {
-#             "context_processors": [
-#                 "django.template.context_processors.debug",
-#                 "django.template.context_processors.request",
-#                 "django.contrib.auth.context_processors.auth",
-#                 "django.contrib.messages.context_processors.messages",
-#             ],
-#         },
-#     },
-# ]
 
 import os
 
@@ -86,10 +83,12 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'wybory.context_processors.unread_notifications',
             ],
         },
     },
 ]
+
 
 WSGI_APPLICATION = "myapp.wsgi.application"
 
@@ -106,8 +105,17 @@ WSGI_APPLICATION = "myapp.wsgi.application"
 
 DATABASES = {
     'default': {
+<<<<<<< HEAD
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+=======
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ewybory', 
+        'USER': 'postgres', 
+        'PASSWORD': 'ctsg.pl7',        
+        'HOST': 'localhost',        
+        'PORT': '5432',            
+>>>>>>> origin/dev
     }
 }
 
@@ -135,9 +143,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "pl"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = 'Europe/Warsaw'
 
 USE_I18N = True
 

@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}E-Wybory{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <!-- Link do ikon Font Awesome (opcjonalnie) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -22,10 +21,16 @@
                         <i class="fas fa-chevron-down" style="font-size: 0.8em;"></i>
                     </button>
                     <div class="dropdown-content">
+                        <a href="{% url 'notifications' %}"> Powiadomienia ({{ unread_notifications_count }})</a>
                         <a href="{% url 'voter_panel' %}"><i class="fas fa-home"></i> Panel wyborcy</a>
                         <a href="{% url 'ballot' %}"><i class="fas fa-vote-yea"></i> Karta do głosowania</a>
                         <a href="{% url 'activity_history' %}"><i class="fas fa-history"></i> Historia aktywności</a>
                         <a href="{% url 'profile' %}"><i class="fas fa-user-edit"></i> Profil</a>
+                        {% load custom_tags %}
+
+                        {% if user|is_in_group:"Moderator" %}
+                            <a href="{% url 'verify_voters' %}"><i class="fas fa-user-edit"></i> Panel moderatora</a>
+                        {% endif %}
                         <form method="post" action="{% url 'logout' %}" style="margin: 0;">
                             {% csrf_token %}
                             <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Wyloguj się</button>
