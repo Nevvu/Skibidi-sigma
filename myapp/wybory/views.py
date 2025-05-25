@@ -17,6 +17,13 @@ from django.shortcuts import render, get_object_or_404
 from .models import Notification
 from wybory.utils import send_notification_email
 from wybory.utils import create_notification
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.contrib.sites.shortcuts import get_current_site
+from django.urls import reverse
+from django.contrib.auth import get_user_model
 
 
 
@@ -30,9 +37,44 @@ def home(request):
 def signup(request):
     form = CustomUserCreationForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        user = form.save()  
+        user = form.save(commit=False)
+        user.is_active = False  # konto nieaktywne
+        user.save()
+
+        # wygeneruj token aktywacyjny
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        current_site = get_current_site(request)
+        activation_link = f"http://{current_site.domain}{reverse('activate', kwargs={'uidb64': uid, 'token': token})}"
+
+        # wyślij e-mail
+        subject = "Aktywuj swoje konto"
+        message = render_to_string('wybory/emails/activation_email.html', {
+            'user': user,
+            'activation_link': activation_link
+        })
+        send_mail(subject, message, 'no-reply@skibidi-app.pl', [user.email], fail_silently=False)
+
+        messages.success(request, 'Sprawdź maila, aby aktywować konto.')
         return redirect('login')
+
     return render(request, 'wybory/public/signup.html', {'form': form})
+
+def activate_account(request, uidb64, token):
+    User = get_user_model()
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, 'Konto zostało aktywowane. Możesz się teraz zalogować.')
+        return redirect('login')
+    else:
+        return HttpResponse('Link aktywacyjny jest nieprawidłowy lub wygasł.')
 
 def faq(request): return render(request, 'wybory/public/faq.html')
 def contact(request): return render(request, 'wybory/public/contact.html')
