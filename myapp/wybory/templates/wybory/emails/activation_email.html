@@ -1,7 +1,14 @@
-Cześć {{ user.username }}!<br><br>
-
-Dziękujemy za rejestrację. Aby aktywować konto, kliknij w link poniżej:<br><br>
-
-<a href="{{ activation_link }}">Aktywuj konto</a><br><br>
-
-Jeśli to nie Ty — zignoruj tę wiadomość.
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Aktywacja konta</title>
+</head>
+<body>
+    <p>Cześć {{ user.username }}!</p>
+    <p>Dziękujemy za rejestrację.</p>
+    <p>Kliknij w link poniżej, aby aktywować swoje konto:</p>
+    <p><a href="{{ activation_link }}">{{ activation_link }}</a></p>
+    <p>Pozdrawiamy,<br>Zespół Skibidi-App</p>
+</body>
+</html>

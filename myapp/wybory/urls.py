@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
+from .views import activate_account
 
 urlpatterns = [
     path('', views.home, name='home'), 
@@ -25,5 +26,8 @@ urlpatterns = [
     path('election/<int:election_id>/summary_pdf/', views.generate_election_summary_pdf, name='election_summary_pdf'),
     path('voter/notifications/', views.notifications, name='notifications'),
     path('moderator/verify-voters/', views.verify_voters, name='verify_voters'),
+    path('activate/<uidb64>/<token>/', activate_account, name='activate'),
+    path('activate/<str:token>/', activate_account, name='activate'),
 ]
+
 

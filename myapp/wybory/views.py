@@ -18,63 +18,81 @@ from .models import Notification
 from wybory.utils import send_notification_email
 from wybory.utils import create_notification
 from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes
-from django.core.mail import send_mail
 from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
-from django.contrib.auth import get_user_model
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
+from django.http import HttpResponse
+from django.utils.crypto import get_random_string
+from django.core.mail import EmailMultiAlternatives
+from .forms import CustomUserCreationForm as SignUpForm
+from .utils import account_activation_token
+from django.shortcuts import render
+from django.contrib.auth import login
 
-
-
-
-
-# --- Public views ---
-def home(request):
-    elections = Election.objects.all()
-    return render(request, 'wybory/public/home.html', {'elections': elections})
+from .models import Voter
 
 def signup(request):
-    form = CustomUserCreationForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        user = form.save(commit=False)
-        user.is_active = False  # konto nieaktywne
-        user.save()
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
 
-        # wygeneruj token aktywacyjny
-        token = default_token_generator.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        current_site = get_current_site(request)
-        activation_link = f"http://{current_site.domain}{reverse('activate', kwargs={'uidb64': uid, 'token': token})}"
+            current_site = get_current_site(request)
+            subject = 'Aktywuj swoje konto'
+            message = render_to_string('wybory/emails/account_activation_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': account_activation_token.make_token(user),
+            })
 
-        # wyślij e-mail
-        subject = "Aktywuj swoje konto"
-        message = render_to_string('wybory/emails/activation_email.html', {
-            'user': user,
-            'activation_link': activation_link
-        })
-        send_mail(subject, message, 'no-reply@skibidi-app.pl', [user.email], fail_silently=False)
-
-        messages.success(request, 'Sprawdź maila, aby aktywować konto.')
-        return redirect('login')
-
+            send_notification_email(subject, message, [user.email])
+            messages.success(request, 'Rejestracja zakończona! Sprawdź e-mail, aby aktywować konto.')
+            return redirect('login')
+    else:
+        form = SignUpForm()
     return render(request, 'wybory/public/signup.html', {'form': form})
 
 def activate_account(request, uidb64, token):
-    User = get_user_model()
     try:
-        uid = urlsafe_base64_decode(uidb64).decode()
+        uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
 
-    if user is not None and default_token_generator.check_token(user, token):
+    if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
         user.save()
-        messages.success(request, 'Konto zostało aktywowane. Możesz się teraz zalogować.')
-        return redirect('login')
+
+        # Dodajemy Voter tylko jeśli nie istnieje
+        if not hasattr(user, 'voter'):
+            Voter.objects.create(user=user, name=user.username, email=user.email)
+
+        login(request, user)
+        messages.success(request, 'Konto zostało aktywowane!')
+        return redirect('home')
     else:
         return HttpResponse('Link aktywacyjny jest nieprawidłowy lub wygasł.')
+    
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                return redirect('home')
+            else:
+                messages.error(request, 'Konto nieaktywne. Sprawdź e-mail.')
+        else:
+            messages.error(request, 'Nieprawidłowy login lub hasło.')
+    return render(request, 'wybory/public/login.html')
+
+
 
 def faq(request): return render(request, 'wybory/public/faq.html')
 def contact(request): return render(request, 'wybory/public/contact.html')
@@ -302,3 +320,7 @@ def verify_voters(request):
         return redirect('verify_voters')
 
     return render(request, 'wybory/moderator/verify_voters.html', {'voters': voters})
+
+@login_required
+def home(request):
+    return render(request, 'wybory/public/home.html')
