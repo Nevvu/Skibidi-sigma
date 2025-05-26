@@ -29,8 +29,33 @@ from .forms import CustomUserCreationForm as SignUpForm
 from .utils import account_activation_token
 from django.shortcuts import render
 from django.contrib.auth import login
+import requests
+from django.conf import settings
 
 from .models import Voter
+
+def register_view(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+
+        # Sprawdzenie reCAPTCHA
+        recaptcha_response = request.POST.get('g-recaptcha-response')
+        data = {
+            'secret': '6LdREUkrAAAAAGxiNBHatbkyMG8vOY_KpwoP6_Tq',  # NIE PUBLICZNY
+            'response': recaptcha_response
+        }
+        r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
+        result = r.json()
+
+        if form.is_valid() and result.get('success'):
+            form.save()
+            return redirect('login')  # lub inna strona po rejestracji
+        else:
+            messages.error(request, 'Błąd rejestracji lub nieprawidłowa CAPTCHA.')
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, 'signup.html', {'form': form})
 
 def signup(request):
     if request.method == 'POST':

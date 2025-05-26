@@ -2,9 +2,13 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .models import *
+#from captcha.fields import ReCaptchaField
+#from captcha.widgets import ReCaptchaV2Checkbox
+
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True, help_text="Wprowadź poprawny adres e-mail.")
+   # captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox)
 
     class Meta:
         model = User

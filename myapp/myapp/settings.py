@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "wybory",
+    #'captcha',
 ]
 
 LOGIN_REDIRECT_URL = '/'
@@ -167,3 +168,5 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'starymurzyn3@gmail.com' 
 EMAIL_HOST_PASSWORD = 'bjwn wtkd dgty qopt'  
 DEFAULT_FROM_EMAIL = 'no-reply@skibidi-app.pl'
+#RECAPTCHA_PUBLIC_KEY = '6LcgD0krAAAAAFnCLKCCoVJTiejaRvFt03-nU1RF'
+#RECAPTCHA_PRIVATE_KEY = '6LcgD0krAAAAADKHoCgKwFn_Bhi4g-iNcp8XUAxC'
