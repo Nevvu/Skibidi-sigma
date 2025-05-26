@@ -75,6 +75,14 @@ class Vote(models.Model):
     election = models.ForeignKey(Election, on_delete = models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add = True)    
 
+class PartyVote(models.Model):
+    party = models.ForeignKey(Party, on_delete=models.CASCADE, related_name='votes')
+    election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='party_votes')
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Głos na {self.party.name} w wyborach {self.election.title}"
+
 @receiver(post_save, sender=User)
 def create_voter(sender, instance, created, **kwargs):
     if created:

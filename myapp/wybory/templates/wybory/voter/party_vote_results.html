@@ -1,0 +1,28 @@
+{% extends 'wybory/base.html' %}
+
+{% block title %}Wyniki głosowania na partie{% endblock %}
+
+{% block content %}
+<h2>Wyniki głosowania na partie</h2>
+
+<p><strong>Wybory:</strong> {{ election.title }}</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Partia</th>
+            <th>Liczba głosów</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for party_vote in party_votes %}
+        <tr>
+            <td>{{ party_vote.party__name }}</td>
+            <td>{{ party_vote.total_votes }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p><a href="{% url 'voter_panel' %}">Powrót do panelu wyborcy</a></p>
+{% endblock %}

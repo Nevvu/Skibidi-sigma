@@ -1,21 +1,19 @@
 {% extends 'wybory/base.html' %}
 
-{% block title %}Historia Aktywności{% endblock %}
+{% block title %}Historia aktywności{% endblock %}
 
 {% block content %}
-<h2>Historia Aktywności</h2>
+<h2>Historia aktywności</h2>
 
-{% if votes %}
+{% if voted_elections %}
     <ul>
-        {% for vote in votes %}
+        {% for election in voted_elections %}
             <li>
-                <strong>Wybory:</strong> {{ vote.election.title }}<br>
-                <strong>Kandydat:</strong> {{ vote.candidate.name }}<br>
-                <strong>Data głosowania:</strong> {{ vote.timestamp|date:"d M Y H:i" }}
+                <strong>{{ election.title }}</strong> - Data: {{ election.date }}
             </li>
         {% endfor %}
     </ul>
 {% else %}
-    <p>Brak oddanych głosów.</p>
+    <p>Nie oddałeś jeszcze głosu w żadnych wyborach.</p>
 {% endif %}
-{% endblock %}
+{% endblock %}  

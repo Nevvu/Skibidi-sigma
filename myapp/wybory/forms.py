@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .models import *
 
+
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True, help_text="Wprowadź poprawny adres e-mail.")
 
@@ -59,3 +60,17 @@ class CastVoteForm(forms.Form):
         super().__init__(*args, **kwargs)
         if election:
             self.fields['candidate'].queryset = Candidate.objects.filter(election=election)
+            
+class PartyVoteForm(forms.Form):
+    party = forms.ModelChoiceField(
+        queryset=Party.objects.none(),
+        widget=forms.RadioSelect,
+        empty_label=None,
+        label="Wybierz partię"
+    )
+
+    def __init__(self, *args, **kwargs):
+        election = kwargs.pop('election', None)
+        super().__init__(*args, **kwargs)
+        if election:
+            self.fields['party'].queryset = Party.objects.filter(election=election)
