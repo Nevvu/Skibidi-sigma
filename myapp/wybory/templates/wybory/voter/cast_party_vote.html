@@ -1,0 +1,18 @@
+{% extends 'wybory/base.html' %}
+
+{% block title %}Głosowanie na partię{% endblock %}
+
+{% block content %}
+<h2>Głosowanie na partię</h2>
+
+<p><strong>Wybory:</strong> {{ election.title }}</p>
+<p><strong>Data:</strong> {{ election.date }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Oddaj głos</button>
+</form>
+
+<p><a href="{% url 'ballot' %}">Powrót do karty do głosowania</a></p>
+{% endblock %}

@@ -5,14 +5,29 @@
 {% block content %}
 <h2>Karta do Głosowania</h2>
 
+<h3>Głosowanie na prezydenta</h3>
 <ul>
-    {% for election in elections %}
+    {% for election in presidential_elections %}
         <li>
             <strong>{{ election.title }}</strong> ({{ election.date|date:"d M Y" }})
             {% if election.id in voted_elections %}
                 <span style="color: green;">Głos oddany</span>
             {% else %}
-                <a href="{% url 'cast_vote' election.id %}">Oddaj głos</a>
+                <a href="{% url 'cast_vote' election.id %}">Oddaj głos na kandydata</a>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+
+<h3>Głosowanie na partie</h3>
+<ul>
+    {% for election in parliamentary_elections %}
+        <li>
+            <strong>{{ election.title }}</strong> ({{ election.date|date:"d M Y" }})
+            {% if election.id in party_voted_elections %}
+                <span style="color: green;">Głos oddany na partię</span>
+            {% else %}
+                <a href="{% url 'cast_party_vote' election.id %}">Oddaj głos na partię</a>
             {% endif %}
         </li>
     {% endfor %}

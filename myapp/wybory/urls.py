@@ -28,6 +28,6 @@ urlpatterns = [
     path('moderator/verify-voters/', views.verify_voters, name='verify_voters'),
     path('activate/<uidb64>/<token>/', activate_account, name='activate'),
     path('activate/<str:token>/', activate_account, name='activate'),
+    path('cast_party_vote/<int:election_id>/', views.cast_party_vote, name='cast_party_vote'),
 ]
-
 

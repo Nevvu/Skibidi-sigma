@@ -1,8 +1,8 @@
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
 from django.contrib import messages  
 from .models import *
 from .forms import *
@@ -28,11 +28,30 @@ from django.core.mail import EmailMultiAlternatives
 from .forms import CustomUserCreationForm as SignUpForm
 from .utils import account_activation_token
 from django.shortcuts import render
+
 from django.contrib.auth import login
 import requests
 from django.conf import settings
 
+import matplotlib.pyplot as plt
+import io
+import base64
+
 from .models import Voter
+from .forms import PartyVoteForm
+
+import logging
+
+logger = logging.getLogger('myapp')
+
+def my_view(request):
+    logger.info("To jest log informacyjny")
+    logger.error("Coś poszło nie tak!")
+
+
+def index(request):
+    logger.info("Strona główna została odwiedzona")
+    return render(request, 'signup.html')
 
 def register_view(request):
     if request.method == 'POST':
@@ -191,15 +210,19 @@ def cast_vote(request, election_id):
             request.session[f'voted_{election_id}'] = True
 
             messages.success(request, "Twój głos został oddany pomyślnie.")
-            return redirect('voter_panel')
+            return redirect('ballot')
     else:
         form = CastVoteForm(election=election)
 
     return render(request, 'wybory/voter/cast_vote.html', {'election': election, 'form': form})
 
+
+
 # --- Voter-only views ---
 @login_required
 def voter_panel(request): return render(request, 'wybory/voter/panel.html')
+
+
 
 @login_required
 def ballot(request):
@@ -208,22 +231,29 @@ def ballot(request):
         election_id for election_id in elections.values_list('id', flat=True)
         if request.session.get(f'voted_{election_id}', False)
     ]
+    party_voted_elections = [
+        election_id for election_id in elections.values_list('id', flat=True)
+        if request.session.get(f'party_voted_{election_id}', False)
+    ]
+
+    presidential_elections = elections.filter(election_type__name="Prezydenckie")
+    parliamentary_elections = elections.filter(election_type__name="Parlamentarne")
 
     return render(request, 'wybory/voter/ballot.html', {
-        'elections': elections,
+        'presidential_elections': presidential_elections,
+        'parliamentary_elections': parliamentary_elections,
         'voted_elections': voted_elections,
+        'party_voted_elections': party_voted_elections,
     })
-
 
 @login_required
 def activity_history(request):
-    voter = Voter.objects.filter(user=request.user).first()
-    if not voter:
-        messages.error(request, "Nie znaleziono Twoich danych wyborcy.")
-        return redirect('voter_panel')  
+    voted_elections_ids = [
+        int(key.split('_')[1]) for key in request.session.keys() if key.startswith('voted_') and request.session[key]
+    ]
+    voted_elections = Election.objects.filter(id__in=voted_elections_ids)
 
-    votes = Vote.objects.filter(voter=voter).select_related('candidate', 'election')
-    return render(request, 'wybory/voter/activity_history.html', {'votes': votes})
+    return render(request, 'wybory/voter/activity_history.html', {'voted_elections': voted_elections})
 
 
 @login_required
@@ -260,7 +290,44 @@ def verify_identity(request):
     return render(request, 'wybory/voter/verify_identity.html', {'form': form})
 
 
-@login_required
+# @login_required
+# def generate_election_summary_pdf(request, election_id):
+#     election = Election.objects.get(id=election_id)
+#     candidates = Candidate.objects.filter(election=election)
+#     votes = Vote.objects.filter(election=election)
+
+#     candidate_support = []
+#     total_votes = votes.count()
+#     for candidate in candidates:
+#         candidate_votes = votes.filter(candidate=candidate).count()
+#         support_percentage = (candidate_votes / total_votes * 100) if total_votes > 0 else 0
+#         candidate_support.append({
+#             'name': candidate.name,
+#             'party': candidate.party.name if candidate.party else "Bezpartyjny",
+#             'votes': candidate_votes,
+#             'support_percentage': round(support_percentage, 2),
+#         })
+
+#     context = {
+#         'election': election,
+#         'candidates': candidate_support,
+#         'start_time': election.date,
+#         'end_time': election.end_time,
+#         'total_candidates': candidates.count(),
+#         'total_votes': total_votes,
+#     }
+
+#     html_string = render_to_string('wybory/pdf/election_summary.html', context)
+#     html = HTML(string=html_string, base_url=request.build_absolute_uri())
+
+#     pdf_file = html.write_pdf()
+
+#     response = HttpResponse(pdf_file, content_type='application/pdf')
+#     response['Content-Disposition'] = f'attachment; filename="podsumowanie_wyborow_{election_id}.pdf"'
+#     return response
+
+
+# @login_required
 def generate_election_summary_pdf(request, election_id):
     election = Election.objects.get(id=election_id)
     candidates = Candidate.objects.filter(election=election)
@@ -268,6 +335,9 @@ def generate_election_summary_pdf(request, election_id):
 
     candidate_support = []
     total_votes = votes.count()
+    candidate_names = []
+    candidate_votes_list = []
+
     for candidate in candidates:
         candidate_votes = votes.filter(candidate=candidate).count()
         support_percentage = (candidate_votes / total_votes * 100) if total_votes > 0 else 0
@@ -277,7 +347,23 @@ def generate_election_summary_pdf(request, election_id):
             'votes': candidate_votes,
             'support_percentage': round(support_percentage, 2),
         })
+        candidate_names.append(candidate.name)
+        candidate_votes_list.append(candidate_votes)
 
+    # Generowanie wykresu
+    plt.figure(figsize=(6, 6))
+    plt.pie(candidate_votes_list, labels=candidate_names, autopct='%1.1f%%', startangle=140)
+    plt.title(f"Wyniki wyborów: {election.title}")
+
+    # Zapisanie wykresu do pamięci jako obraz
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+    buffer.close()
+    plt.close()
+
+    # Kontekst dla szablonu
     context = {
         'election': election,
         'candidates': candidate_support,
@@ -285,18 +371,19 @@ def generate_election_summary_pdf(request, election_id):
         'end_time': election.end_time,
         'total_candidates': candidates.count(),
         'total_votes': total_votes,
+        'chart': image_base64,  # Wykres w formacie base64
     }
 
+    # Renderowanie szablonu HTML
     html_string = render_to_string('wybory/pdf/election_summary.html', context)
     html = HTML(string=html_string, base_url=request.build_absolute_uri())
 
+    # Generowanie pliku PDF
     pdf_file = html.write_pdf()
 
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="podsumowanie_wyborow_{election_id}.pdf"'
     return response
-
-
 
 
 
@@ -346,6 +433,47 @@ def verify_voters(request):
 
     return render(request, 'wybory/moderator/verify_voters.html', {'voters': voters})
 
-@login_required
+
 def home(request):
-    return render(request, 'wybory/public/home.html')
+    presidential_elections = Election.objects.filter(election_type__name="Prezydenckie")
+    parliamentary_elections = Election.objects.filter(election_type__name="Parlamentarne")
+
+    return render(request, 'wybory/public/home.html', {
+        'presidential_elections': presidential_elections,
+        'parliamentary_elections': parliamentary_elections,
+    })
+
+@login_required
+def cast_party_vote(request, election_id):
+    election = Election.objects.filter(id=election_id, date__gte=datetime.date.today()).first()
+    if not election:
+        messages.error(request, "Nie znaleziono wyborów lub są one niedostępne.")
+        return redirect('voter_panel')
+
+    if request.session.get(f'party_voted_{election_id}', False):
+        messages.error(request, "Już oddałeś głos na partię w tych wyborach.")
+        return redirect('voter_panel')
+
+    if request.method == 'POST':
+        form = PartyVoteForm(request.POST, election=election)
+        if form.is_valid():
+            party = form.cleaned_data['party']
+            PartyVote.objects.create(party=party, election=election)
+            request.session[f'party_voted_{election_id}'] = True
+            messages.success(request, "Twój głos na partię został oddany pomyślnie.")
+            return redirect('ballot')
+    else:
+        form = PartyVoteForm(election=election)
+
+    # Przekazanie formularza i wyborów do szablonu
+    return render(request, 'wybory/voter/cast_party_vote.html', {
+        'election': election,
+        'form': form,
+    })
+
+@login_required
+def party_vote_results(request, election_id):
+    election = Election.objects.get(id=election_id)
+    party_votes = PartyVote.objects.filter(election=election).values('party__name').annotate(total_votes=Count('id')).order_by('-total_votes')
+
+    return render(request, 'wybory/voter/party_vote_results.html', {'election': election, 'party_votes': party_votes})
