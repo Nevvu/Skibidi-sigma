@@ -1,11 +1,16 @@
 {% extends 'wybory/base.html' %}
 
+{% load static %}
+
 {% block title %}Strona główna - E-Wybory{% endblock %}
 
 {% block content %}
-<h2>Sondaże:</h2>
 
-<h2>Wybory prezydenckie:</h2>
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+
+
+<div class="wrapper">
+<h2>Wybory prezydenckie</h2>
 <ul>
     {% for election in presidential_elections %}
         <li>
@@ -18,7 +23,7 @@
     {% endfor %}
 </ul>
 
-<h2>Wybory parlamentarne:</h2>
+<h2>Wybory parlamentarne</h2>
 <ul>
     {% for election in parliamentary_elections %}
         <li>
@@ -30,4 +35,5 @@
         </li>
     {% endfor %}
 </ul>
+</div>
 {% endblock %}

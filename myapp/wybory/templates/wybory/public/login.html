@@ -1,13 +1,23 @@
 {% extends 'wybory/base.html' %}
 
+{% load static %}
+
 {% block title %}Logowanie - E-Wybory{% endblock %}
 
 {% block content %}
-<h2>Zaloguj się</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Zaloguj</button>
-</form>
-<p>Nie masz konta? <a href="{% url 'signup' %}">Zarejestruj się</a></p>
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+
+<div class="login-page">
+    <div class="login-wrapper">
+        <h2 class="login-title">Zaloguj się</h2>
+        <form method="post" class="login-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="login-button">Zaloguj</button>
+        </form>
+        <p class="login-register-text">
+            Nie masz konta? <a href="{% url 'signup' %}" class="login-link">Zarejestruj się</a>
+        </p>
+    </div>
+</div>
 {% endblock %}

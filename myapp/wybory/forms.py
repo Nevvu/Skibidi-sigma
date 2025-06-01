@@ -25,10 +25,11 @@ class CustomUserCreationForm(UserCreationForm):
 class VerificationForm(forms.ModelForm):
     class Meta:
         model = Voter
-        fields = ['name', 'last_name', 'pesel_num', 'address', 'phone_number']
+        fields = ['name', 'last_name', 'birth_date','pesel_num', 'address', 'phone_number']
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'Imię i nazwisko'}),
             'last_name': forms.TextInput(attrs={'placeholder': 'Nazwisko'}),
+            'birth_date': forms.DateInput(attrs={'type': 'date'}),  
             'pesel_num': forms.TextInput(attrs={'maxlength': 11, 'placeholder': 'PESEL'}),
             'address': forms.TextInput(attrs={'placeholder': 'Adres'}),
             'phone_number': forms.TextInput(attrs={'placeholder': 'Numer telefonu'}),
@@ -45,7 +46,7 @@ class VerificationForm(forms.ModelForm):
 class EditProfileForm(forms.ModelForm):
     class Meta:
         model = Voter
-        fields = ['address', 'phone_number']
+        fields = ['address', 'phone_number']  
         widgets = {
             'address': forms.TextInput(attrs={'placeholder': 'Adres'}),
             'phone_number': forms.TextInput(attrs={'placeholder': 'Numer telefonu'}),

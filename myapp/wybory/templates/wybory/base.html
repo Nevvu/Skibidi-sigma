@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,38 +8,46 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
-    <h1>Witamy w systemie E-Wybory</h1>
+<body class="base-page">
+
+    <header class="site-header">
+        <h1 class="site-title">Witamy w systemie <span class="highlight">E-Wybory</span></h1>
+    </header>
 
     <nav class="auth-nav">
         <div class="auth-container">
             {% if user.is_authenticated %}
-                <p>Witaj, {{ user.username }}!</p>
-                <div class="dropdown">
-                    <button class="dropbtn">
+                <p class="welcome-text">Witaj, {{ user.username }}!</p>
+                <div class="dropdown user-dropdown">
+
+                    <button class="dropbtn user">
                         <i class="fas fa-user-circle"></i> Moje konto 
-                        <i class="fas fa-chevron-down" style="font-size: 0.8em;"></i>
+                        <i class="fas fa-chevron-down"></i>
                     </button>
-                    <div class="dropdown-content">
-                        <a href="{% url 'notifications' %}"> Powiadomienia ({{ unread_notifications_count }})</a>
+                    <div class="dropdown-content user">
+                        <a href="{% url 'notifications' %}">Powiadomienia ({{ unread_notifications_count }})</a>
                         <a href="{% url 'voter_panel' %}"><i class="fas fa-home"></i> Panel wyborcy</a>
                         <a href="{% url 'ballot' %}"><i class="fas fa-vote-yea"></i> Karta do głosowania</a>
                         <a href="{% url 'activity_history' %}"><i class="fas fa-history"></i> Historia aktywności</a>
                         <a href="{% url 'profile' %}"><i class="fas fa-user-edit"></i> Profil</a>
                         {% load custom_tags %}
-
                         {% if user|is_in_group:"Moderator" %}
-                            <a href="{% url 'verify_voters' %}"><i class="fas fa-user-edit"></i> Panel moderatora</a>
+                            <a href="{% url 'verify_voters' %}"><i class="fas fa-user-shield"></i> Panel moderatora</a>
                         {% endif %}
-                        <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+                        <form method="post" action="{% url 'logout' %}">
                             {% csrf_token %}
-                            <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Wyloguj się</button>
+                            <button type="submit" class="logout-btn">
+                                <i class="fas fa-sign-out-alt"></i> Wyloguj się
+                            </button>
                         </form>
                     </div>
                 </div>
+            </div>
             {% else %}
-                <a href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Zaloguj się</a>
-                <a href="{% url 'signup' %}"><i class="fas fa-user-plus"></i> Zarejestruj się</a>
+                <div class="auth-links">
+                    <a href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Zaloguj się</a>
+                    <a href="{% url 'signup' %}"><i class="fas fa-user-plus"></i> Zarejestruj się</a>
+                </div>
             {% endif %}
         </div>
     </nav>
@@ -47,26 +55,29 @@
     <nav class="main-nav">
         <div class="nav-container">
             <a href="{% url 'home' %}"><i class="fas fa-home"></i> Strona główna</a>
-            <a href="{% url 'candidate_search' %}"><i class="fas fa-search"></i> Lista kandydatów</a>
+            <a href="{% url 'candidate_search' %}"><i class="fas fa-search"></i> Kandydaci</a>
             <a href="{% url 'parties' %}"><i class="fas fa-users"></i> Partie</a>
-            <a href="{% url 'results' %}"><i class="fas fa-chart-bar"></i> Wyniki wyborów</a>
-            <a href="{% url 'election_calendar' %}"><i class="fas fa-calendar-alt"></i> Kalendarz wyborczy</a>
-            <div class="dropdown">
-                <button class="dropbtn">
+            <a href="{% url 'results' %}"><i class="fas fa-chart-bar"></i> Wyniki</a>
+            <a href="{% url 'election_calendar' %}"><i class="fas fa-calendar-alt"></i> Kalendarz</a>
+            <div class="dropdown nav-dropdown">
+
+                <button class="dropbtn nav">
                     <i class="fas fa-ellipsis-h"></i> Więcej
-                    <i class="fas fa-chevron-down" style="font-size: 0.8em;"></i>
+                    <i class="fas fa-chevron-down"></i>
                 </button>
-                <div class="dropdown-content">
+                <div class="dropdown-content nav">
                     <a href="{% url 'faq' %}"><i class="fas fa-question-circle"></i> FAQ</a>
                     <a href="{% url 'contact' %}"><i class="fas fa-envelope"></i> Kontakt</a>
                 </div>
             </div>
         </div>
+        </div>
     </nav>
 
-    <hr>
+    <main class="site-content">
+        {% block content %}
+        {% endblock %}
+    </main>
 
-    {% block content %}
-    {% endblock %}
 </body>
 </html>

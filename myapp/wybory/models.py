@@ -61,6 +61,7 @@ class Voter(models.Model):
     eligible = models.BooleanField(default=False)
     address = models.CharField(max_length=255, blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
+    birth_date = models.DateField(null=True, blank=True)  
     verification_status = models.CharField(
         max_length=20,
         choices=[('pending', 'Oczekujące'), ('approved', 'Zatwierdzone'), ('rejected', 'Odrzucone')],
