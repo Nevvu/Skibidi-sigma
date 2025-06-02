@@ -2,6 +2,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
+from PIL import Image
+
 
 
 class Notification(models.Model):
@@ -35,18 +37,35 @@ class Election(models.Model):
 
 
 class Party(models.Model):
-    name = models.CharField(max_length=100, unique=True)  
-    description = models.TextField(null=True, blank=True) 
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(null=True, blank=True)
     founded_date = models.DateField(null=True, blank=True)
-    election = models.ForeignKey(Election, related_name='parties', on_delete=models.CASCADE, null=True, blank=True)
+    election = models.ForeignKey('Election', related_name='parties', on_delete=models.CASCADE, null=True, blank=True)
+    image = models.ImageField(upload_to='party_images/', null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.image:
+            img = Image.open(self.image.path)
+            img = img.resize((300, 400), Image.Resampling.LANCZOS)  
+            img.save(self.image.path)
 
     def __str__(self):
         return self.name
 
+
 class Candidate(models.Model):
     name = models.CharField(max_length=100)
-    election = models.ForeignKey(Election, related_name='candidates', on_delete=models.CASCADE)
-    party = models.ForeignKey(Party, null=True, blank=True, on_delete=models.SET_NULL)  
+    election = models.ForeignKey('Election', related_name='candidates', on_delete=models.CASCADE)
+    party = models.ForeignKey(Party, null=True, blank=True, on_delete=models.SET_NULL)
+    image = models.ImageField(upload_to='candidate_images/', null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.image:
+            img = Image.open(self.image.path)
+            img = img.resize((300, 400), Image.Resampling.LANCZOS) 
+            img.save(self.image.path)
 
     def __str__(self):
         return self.name

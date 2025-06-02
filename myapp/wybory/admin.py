@@ -107,12 +107,22 @@ def signup(request):
         return redirect('login')
     return render(request, 'wybory/public/signup.html', {'form': form})
 
+from django.contrib import admin
+from .models import Candidate, Party
+
+@admin.register(Party)
+class PartyAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description', 'founded_date', 'election', 'image')
+
+@admin.register(Candidate)
+class CandidateAdmin(admin.ModelAdmin):
+    list_display = ('name', 'election', 'party', 'image')
+
 admin.site.register(Election, ElectionAdmin)
 admin.site.register(Vote, VoteAdmin)
 admin.site.register(Voter, VoterAdmin)
-admin.site.register(Candidate)
 admin.site.register(VotingCriteria)
 admin.site.register(ElectionType)
-admin.site.register(Party)
+
 
 

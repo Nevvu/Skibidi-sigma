@@ -38,10 +38,12 @@
     outline: none;
 }
 
+
 /* Lista kandydatów */
 .candidate-list {
     list-style-type: none;
     padding: 0;
+    margin-top: 10px;
     max-width: 500px;
     width: 100%;
     background-color: #fff;
@@ -50,17 +52,56 @@
 }
 
 .candidate-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 15px 20px;
+    height: 120px;
     border-bottom: 1px solid #eee;
-    font-size: 16px;
     color: #444;
+    transition: height 0.3s ease; 
+    overflow: hidden;
+    position: relative;
 }
 
-.candidate-list li:last-child {
-    border-bottom: none;
+.candidate-list li:hover {
+    height: 330px;
 }
 
-h2, h3 {
-    color: #333;
-    margin-bottom: 20px;
+/* Obrazek po prawej */
+.candidate-image {
+    opacity: 0;
+    width: 150px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 0 12px 12px 0;
+    margin-left: 20px;
+    flex-shrink: 0;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    transform: translateY(20px); 
+    pointer-events: none;
+}
+
+.candidate-list li:hover .candidate-image {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Tekst po lewej */
+.candidate-name {
+    font-weight: bold;
+    font-size: 64px;
+    display: block;
+    color: #222;
+}
+
+.candidate-party {
+    font-size: 24px;
+    color: #666;
+    margin: 4px 0 0 0;
+}
+
+/* Kontener tekstu */
+.candidate-text {
+    flex: 1;
 }
