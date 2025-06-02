@@ -40,7 +40,7 @@ body.base-page {
 }
 
 /* === Sticky Auth Nav === */
-/* .auth-nav {
+.auth-nav {
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -53,16 +53,9 @@ body.base-page {
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-} */
-
-.auth-nav {
-    display: flex;
-    justify-content: space-between; 
-    align-items: center;
-    padding: 0 20px;
-    background-color: #003366;
-    height: 55px;
 }
+
+
 
 .welcome-text {
     font-size: 14px;
@@ -73,6 +66,16 @@ body.base-page {
 }
 
 /* === User Dropdown === */
+.auth-links {
+    list-style: none;
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin-left: auto;
+    align-items: center;
+}
+
+
 .user-dropdown {
     position: relative;
     display: inline-block;
@@ -95,7 +98,7 @@ body.base-page {
     display: none;
     position: absolute;
     top: 100%;
-    right: 0;
+    left: 0;
     background-color: white;
     min-width: 220px;
     border-radius: 6px;
