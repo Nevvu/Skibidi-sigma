@@ -15,7 +15,7 @@
     {% for election in presidential_elections %}
         <li>
             <a href="{% url 'candidate_list' election.id %}">
-                {{ election.title }} ({{ election.election_type.name }})
+                Wybory {{ election.election_type.name }} {{ election.title }} 
             </a>
             <p>{{ election.description }}</p>
             <p>Data: {{ election.date }}</p>
@@ -28,7 +28,7 @@
     {% for election in parliamentary_elections %}
         <li>
             <a href="{% url 'candidate_list' election.id %}">
-                {{ election.title }} ({{ election.election_type.name }})
+                Wybory {{ election.election_type.name }} {{ election.title }} 
             </a>
             <p>{{ election.description }}</p>
             <p>Data: {{ election.date }}</p>

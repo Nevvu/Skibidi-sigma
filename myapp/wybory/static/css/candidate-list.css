@@ -1,0 +1,66 @@
+/* Styl strony kandydatów */
+.candidate-page {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.candidate-form {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 100%;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.candidate-form label {
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: block;
+    color: #333;
+}
+
+.candidate-form select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    margin-top: 8px;
+}
+
+.candidate-form select:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+/* Lista kandydatów */
+.candidate-list {
+    list-style-type: none;
+    padding: 0;
+    max-width: 500px;
+    width: 100%;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.candidate-list li {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    font-size: 16px;
+    color: #444;
+}
+
+.candidate-list li:last-child {
+    border-bottom: none;
+}
+
+h2, h3 {
+    color: #333;
+    margin-bottom: 20px;
+}
