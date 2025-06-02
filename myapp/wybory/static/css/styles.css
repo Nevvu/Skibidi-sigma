@@ -57,7 +57,7 @@ body.base-page {
 
 .auth-nav {
     display: flex;
-    justify-content: space-between; /* Rozdziela elementy na lewą i prawą stronę */
+    justify-content: space-between; 
     align-items: center;
     padding: 0 20px;
     background-color: #003366;
