@@ -1,13 +1,28 @@
 {% extends 'wybory/base.html' %}
+{% load static %}
 
 {% block title %}Kontakt{% endblock %}
 
 {% block content %}
-<h2>Kontakt</h2>
-<p>Skontaktuj się z nami:</p>
-<ul>
-    <li>Email: admin@ewybory.pl</li>
-    <li>Telefon: +48 123 456 789</li>
-    <li>Adres: ul. Wyborcza 1, 00-001 Warszawa</li>
-</ul>
+
+<link rel="stylesheet" href="{% static 'css/contact.css' %}">
+
+<div class="contact-section">
+    <h2 class="contact-heading">Skontaktuj się z nami</h2>
+    <div class="contact-cards">
+        <div class="contact-card">
+            <span class="contact-label">📧 Email</span>
+            <span class="contact-value">admin@ewybory.pl</span>
+        </div>
+        <div class="contact-card">
+            <span class="contact-label">📞 Telefon</span>
+            <span class="contact-value">+48 123 456 789</span>
+        </div>
+        <div class="contact-card">
+            <span class="contact-label">📍 Adres</span>
+            <span class="contact-value">ul. Wyborcza 1, 00-001 Warszawa</span>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

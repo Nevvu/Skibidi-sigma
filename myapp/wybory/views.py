@@ -290,44 +290,6 @@ def verify_identity(request):
     return render(request, 'wybory/voter/verify_identity.html', {'form': form})
 
 
-# @login_required
-# def generate_election_summary_pdf(request, election_id):
-#     election = Election.objects.get(id=election_id)
-#     candidates = Candidate.objects.filter(election=election)
-#     votes = Vote.objects.filter(election=election)
-
-#     candidate_support = []
-#     total_votes = votes.count()
-#     for candidate in candidates:
-#         candidate_votes = votes.filter(candidate=candidate).count()
-#         support_percentage = (candidate_votes / total_votes * 100) if total_votes > 0 else 0
-#         candidate_support.append({
-#             'name': candidate.name,
-#             'party': candidate.party.name if candidate.party else "Bezpartyjny",
-#             'votes': candidate_votes,
-#             'support_percentage': round(support_percentage, 2),
-#         })
-
-#     context = {
-#         'election': election,
-#         'candidates': candidate_support,
-#         'start_time': election.date,
-#         'end_time': election.end_time,
-#         'total_candidates': candidates.count(),
-#         'total_votes': total_votes,
-#     }
-
-#     html_string = render_to_string('wybory/pdf/election_summary.html', context)
-#     html = HTML(string=html_string, base_url=request.build_absolute_uri())
-
-#     pdf_file = html.write_pdf()
-
-#     response = HttpResponse(pdf_file, content_type='application/pdf')
-#     response['Content-Disposition'] = f'attachment; filename="podsumowanie_wyborow_{election_id}.pdf"'
-#     return response
-
-
-# @login_required
 def generate_election_summary_pdf(request, election_id):
     election = Election.objects.get(id=election_id)
     candidates = Candidate.objects.filter(election=election)

@@ -1,16 +1,24 @@
 {% extends 'wybory/base.html' %}
+{% load static %}
 
 {% block title %}Kalendarz Wyborczy{% endblock %}
 
 {% block content %}
-<h2>Kalendarz Wyborczy</h2>
-<ul>
-    {% for election in elections %}
-        <li>
-            <strong>{{ election.date }}</strong>: {{ election.title }}
-        </li>
-    {% empty %}
-        <p>Brak nadchodzących wyborów.</p>
-    {% endfor %}
-</ul>
+
+<link rel="stylesheet" href="{% static 'css/election_calendar.css' %}">
+
+<div class="calendar-container">
+    <h2 class="calendar-title">Kalendarz Wyborczy</h2>
+    <ul class="calendar-list">
+        {% for election in elections %}
+            <li class="calendar-item">
+                <span class="election-date">{{ election.date }}</span>:
+                <span class="election-title">{{ election.title }}</span>
+            </li>
+        {% empty %}
+            <p class="no-elections">Brak nadchodzących wyborów.</p>
+        {% endfor %}
+    </ul>
+</div>
+
 {% endblock %}
