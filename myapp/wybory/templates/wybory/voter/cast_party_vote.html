@@ -1,18 +1,22 @@
 {% extends 'wybory/base.html' %}
+{% load static %}
 
 {% block title %}Głosowanie na partię{% endblock %}
 
 {% block content %}
-<h2>Głosowanie na partię</h2>
+<link rel="stylesheet" href="{% static 'css/cast_party_vote.css' %}">
+<div class="vote-container">
+  <h2 class="vote-title">Głosowanie na partię</h2>
 
-<p><strong>Wybory:</strong> {{ election.title }}</p>
-<p><strong>Data:</strong> {{ election.date }}</p>
+  <p><strong>Wybory:</strong> {{ election.title }}</p>
+  <p><strong>Data:</strong> {{ election.date }}</p>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Oddaj głos</button>
-</form>
+  <form method="post" class="vote-form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="submit-button">Oddaj głos</button>
+  </form>
 
-<p><a href="{% url 'ballot' %}">Powrót do karty do głosowania</a></p>
+  <p><a href="{% url 'ballot' %}" class="back-link">Powrót do karty do głosowania</a></p>
+</div>
 {% endblock %}

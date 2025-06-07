@@ -1,18 +1,23 @@
 {% extends 'wybory/base.html' %}
+{% load static %}
 
 {% block title %}Oddaj Głos{% endblock %}
 
 {% block content %}
-<h2>Oddaj Głos</h2>
+<link rel="stylesheet" href="{% static 'css/cast_vote.css' %}">
 
-<p><strong>Wybory:</strong> {{ election.title }}</p>
-<p><strong>Data:</strong> {{ election.date }}</p>
+<div class="cast-vote-container">
+  <h2>Oddaj Głos</h2>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Oddaj głos</button>
-</form>
+  <p><strong>Wybory:</strong> {{ election.title }}</p>
+  <p><strong>Data:</strong> {{ election.date }}</p>
 
-<p><a href="{% url 'ballot' %}">Powrót do karty do głosowania</a></p>
+  <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Oddaj głos</button>
+  </form>
+
+  <p><a href="{% url 'ballot' %}">Powrót do karty do głosowania</a></p>
+</div>
 {% endblock %}
