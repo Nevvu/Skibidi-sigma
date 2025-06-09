@@ -1,0 +1,70 @@
+.verify-link {
+    display: inline-block;
+    margin: 10px 0;
+    color: #2980b9;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.verification {
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 5px;
+}
+
+.verification.approved {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.verification.pending {
+    background-color: #f39c12;
+    color: white;
+}
+
+.verification.rejected {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.form-title {
+    margin-top: 30px;
+    font-size: 1.2rem;
+    color: #2c3e50;
+}
+
+.profile-form {
+    margin-top: 15px;
+}
+
+.profile-section {
+    margin-bottom: 25px;
+}
+
+
+.profile-form input,
+.profile-form select,
+.profile-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #2980b9;
+}

@@ -1,0 +1,181 @@
+/* Styl strony kandydatów */
+.candidate-page {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f7f8fa;
+}
+
+/* Formularz wyboru wyborów */
+.candidate-form {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 100%;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.candidate-form label {
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: block;
+    color: #333;
+}
+
+.candidate-form select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    margin-top: 8px;
+}
+
+.candidate-form select:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+/* Lista kandydatów */
+.candidate-list {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 10px;
+    max-width: 500px;
+    width: 100%;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+.candidate-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    color: #444;
+    overflow: hidden;
+    position: relative;
+    min-height: 120px;
+}
+
+/* Obrazek po prawej — widoczny cały czas */
+.candidate-image {
+    opacity: 1;
+    width: 150px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 0 12px 12px 0;
+    margin-left: 20px;
+    flex-shrink: 0;
+    pointer-events: none;
+    transform: none;
+    transition: none;
+}
+
+
+/* Tekst po lewej */
+.candidate-name {
+    font-weight: bold;
+    font-size: 64px;
+    display: block;
+    color: #222;
+}
+
+.candidate-party {
+    font-size: 24px;
+    color: #666;
+    margin: 4px 0 0 0;
+}
+
+/* Kontener tekstu */
+.candidate-text {
+    flex: 1;
+}
+
+/* Lista partii */
+.party-list {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 40px;
+    max-width: 500px;
+    width: 100%;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.party-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+}
+
+.party-list li:last-child {
+    border-bottom: none;
+}
+
+.party-name {
+    font-weight: 600;
+    font-size: 64px;
+    color: #444;
+}
+
+.party-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-left: 15px;
+}
+
+/* Nagłówki i paragrafy */
+h2, h3 {
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+p {
+    color: #444;
+    font-size: 16px;
+    text-align: center;
+    max-width: 600px;
+    margin: 10px auto;
+}
+
+/* Responsive – mobile adjustments */
+@media (max-width: 600px) {
+    .candidate-name {
+        font-size: 32px;
+    }
+
+    .candidate-party {
+        font-size: 18px;
+    }
+
+    .candidate-list li:hover {
+        height: auto;
+    }
+
+    .candidate-image {
+        display: none;
+    }
+
+    .party-image {
+        width: 60px;
+        height: 60px;
+    }
+
+    .candidate-form {
+        padding: 20px;
+    }
+}

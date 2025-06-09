@@ -25,23 +25,23 @@ class CustomUserCreationForm(UserCreationForm):
 class VerificationForm(forms.ModelForm):
     class Meta:
         model = Voter
-        fields = ['name', 'last_name', 'birth_date','pesel_num', 'address', 'phone_number']
+        fields = ['name', 'last_name', 'birth_date', 'pesel_num', 'address', 'phone_number']
         widgets = {
-            'name': forms.TextInput(attrs={'placeholder': 'Imię i nazwisko'}),
+            'name': forms.TextInput(attrs={'placeholder': 'Imię'}),
             'last_name': forms.TextInput(attrs={'placeholder': 'Nazwisko'}),
-            'birth_date': forms.DateInput(attrs={'type': 'date'}),  
+            'birth_date': forms.DateInput(attrs={'type': 'date'}),
             'pesel_num': forms.TextInput(attrs={'maxlength': 11, 'placeholder': 'PESEL'}),
             'address': forms.TextInput(attrs={'placeholder': 'Adres'}),
             'phone_number': forms.TextInput(attrs={'placeholder': 'Numer telefonu'}),
         }
-
-    def clean_pesel_num(self):
-        pesel_num = self.cleaned_data.get('pesel_num')
-        if Voter.objects.filter(pesel_num=pesel_num).exists():
-            raise forms.ValidationError("Ten numer PESEL już istnieje w bazie danych.")
-        return pesel_num
-
-
+        labels = {
+            'name': 'Imię',
+            'last_name': 'Nazwisko',
+            'birth_date': 'Data urodzenia',
+            'pesel_num': 'PESEL',
+            'address': 'Adres',
+            'phone_number': 'Numer telefonu',
+        }
 
 class EditProfileForm(forms.ModelForm):
     class Meta:
@@ -50,6 +50,10 @@ class EditProfileForm(forms.ModelForm):
         widgets = {
             'address': forms.TextInput(attrs={'placeholder': 'Adres'}),
             'phone_number': forms.TextInput(attrs={'placeholder': 'Numer telefonu'}),
+        }
+        labels = {
+            'address': 'Adres',
+            'phone_number': 'Numer telefonu',
         }
 
 class CastVoteForm(forms.Form):

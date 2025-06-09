@@ -1,0 +1,69 @@
+.cast-vote-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #fdfdfd;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    font-family: Arial, sans-serif;
+}
+
+.cast-vote-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.election-info p {
+    margin: 0.3rem 0;
+    font-size: 1rem;
+    color: #444;
+}
+
+.vote-form {
+    margin-top: 1.5rem;
+}
+
+.form-fields p {
+    margin-bottom: 1rem;
+}
+
+.vote-form label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.vote-form select,
+.vote-form input[type="radio"],
+.vote-form input[type="text"] {
+    margin-top: 0.3rem;
+}
+
+.submit-vote-button {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 1rem;
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-vote-button:hover {
+    background-color: #004999;
+}
+
+.error-message {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: #ffe0e0;
+    color: #a94442;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+}

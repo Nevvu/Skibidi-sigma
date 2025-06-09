@@ -7,17 +7,21 @@
 <link rel="stylesheet" href="{% static 'css/cast_party_vote.css' %}">
 
 <div class="cast-vote-container">
-  <h2>Oddaj głos na partię</h2>
+  <h2 class="cast-vote-title">Oddaj głos na partię</h2>
 
-  <p><strong>Wybory:</strong> {{ election.title }}</p>
-  <p><strong>Data rozpoczęcia:</strong> {{ election.date|date:"d-m-Y H:i" }}</p>
-  <p><strong>Data zakończenia:</strong> {{ election.end_time|date:"d-m-Y H:i" }}</p>
+  <div class="election-info">
+    <p><strong>Wybory:</strong> {{ election.title }}</p>
+    <p><strong>Data rozpoczęcia:</strong> {{ election.date|date:"d-m-Y H:i" }}</p>
+    <p><strong>Data zakończenia:</strong> {{ election.end_time|date:"d-m-Y H:i" }}</p>
+  </div>
 
   {% if is_voting_available %}
-      <form method="post">
+      <form method="post" class="vote-form">
           {% csrf_token %}
-          {{ form.as_p }}
-          <button type="submit">Oddaj głos</button>
+          <div class="form-fields">
+            {{ form.as_p }}
+          </div>
+          <button type="submit" class="submit-vote-button">Oddaj głos</button>
       </form>
   {% else %}
       <p class="error-message">

@@ -45,5 +45,23 @@
     {% elif selected_election_id %}
         <p>Brak kandydatów dla wybranych wyborów.</p>
     {% endif %}
+    
+    {% if parties %}
+    <h3>Partie biorące udział w tych wyborach:</h3>
+    <ul class="party-list">
+        {% for party in parties %}
+            <li>
+                <div class="party-text">
+                    <span class="party-name">{{ party.name }}</span>
+                </div>
+                {% if party.image %}
+                    <img src="{{ party.image.url }}" alt="Logo partii" class="party-image">
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+    {% elif selected_election_id %}
+        <p>Brak partii dla wybranych wyborów.</p>
+    {% endif %}
 </div>
 {% endblock %}

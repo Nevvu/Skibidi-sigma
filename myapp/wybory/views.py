@@ -40,16 +40,16 @@ from .forms import PartyVoteForm
 
 import logging
 
-logger = logging.getLogger('myapp')
+# logger = logging.getLogger('myapp')
 
-def my_view(request):
-    logger.info("To jest log informacyjny")
-    logger.error("Coś poszło nie tak!")
+# def my_view(request):
+#     logger.info("To jest log informacyjny")
+#     logger.error("Coś poszło nie tak!")
 
 
-def index(request):
-    logger.info("Strona główna została odwiedzona")
-    return render(request, 'signup.html')
+# def index(request):
+#     # logger.info("Strona główna została odwiedzona")
+#     return render(request, 'signup.html')
 
 def register_view(request):
     if request.method == 'POST':
@@ -138,7 +138,7 @@ def login_view(request):
 
 def faq(request): return render(request, 'wybory/public/faq.html')
 def contact(request): return render(request, 'wybory/public/contact.html')
-def results(request): return render(request, 'wybory/public/results.html')
+
 
 def election_list(request):
     elections = Election.objects.all()
@@ -153,15 +153,30 @@ def parties(request):
     return render(request, 'wybory/public/parties.html', {'parties': parties})
 
 def candidate_list(request, election_id):
+    elections = Election.objects.all()
+    selected_election_id = str(election_id)
     candidates = Candidate.objects.filter(election_id=election_id)
-    return render(request, 'wybory/public/candidate-list.html', {'candidates': candidates})
+    parties = Party.objects.filter(election_id=election_id)
+    return render(request, 'wybory/public/candidate-list.html', {
+        'elections': elections,
+        'selected_election_id': selected_election_id,
+        'candidates': candidates,
+        'parties': parties,
+    })
 
 def candidate_search(request):
-    selected_election_id = request.GET.get('election_id')
-    candidates = Candidate.objects.filter(election_id=selected_election_id) if selected_election_id else None
     elections = Election.objects.all()
+    selected_election_id = request.GET.get('election_id')
+    candidates = Candidate.objects.none()
+    parties = Party.objects.none()
+    if selected_election_id:
+        candidates = Candidate.objects.filter(election_id=selected_election_id)
+        parties = Party.objects.filter(election_id=selected_election_id)
     return render(request, 'wybory/public/candidate-list.html', {
-        'elections': elections, 'candidates': candidates, 'selected_election_id': selected_election_id
+        'elections': elections,
+        'selected_election_id': selected_election_id,
+        'candidates': candidates,
+        'parties': parties,
     })
 
 
@@ -170,10 +185,6 @@ from django.utils.timezone import localtime, now
 def election_results(request):
     current_time = localtime(now()) 
     completed_elections = Election.objects.filter(end_time__lte=current_time)  
-
-    if not completed_elections.exists():
-        messages.info(request, "Nie ma zakończonych wyborów. Wyniki będą dostępne po zakończeniu głosowania.")
-        return redirect('election_list') 
 
     results = []
     for election in completed_elections:
@@ -246,26 +257,23 @@ def voter_panel(request): return render(request, 'wybory/voter/panel.html')
 
 
 
-@login_required
+from django.utils.timezone import localtime, now
+
 def ballot(request):
-    elections = Election.objects.filter(date__gte=datetime.date.today())
-    voted_elections = [
-        election_id for election_id in elections.values_list('id', flat=True)
-        if request.session.get(f'voted_{election_id}', False)
-    ]
-    party_voted_elections = [
-        election_id for election_id in elections.values_list('id', flat=True)
-        if request.session.get(f'party_voted_{election_id}', False)
-    ]
-
-    presidential_elections = elections.filter(election_type__name="Prezydenckie")
-    parliamentary_elections = elections.filter(election_type__name="Parlamentarne")
-
+    current_time = localtime(now())
+    presidential_elections = Election.objects.filter(
+        election_type__name='Prezydenckie',
+        end_time__gt=current_time
+    )
+    parliamentary_elections = Election.objects.filter(
+        election_type__name='Parlamentarne',
+        end_time__gt=current_time
+    )
+    # voted_elections i party_voted_elections jak dotychczas
     return render(request, 'wybory/voter/ballot.html', {
         'presidential_elections': presidential_elections,
         'parliamentary_elections': parliamentary_elections,
-        'voted_elections': voted_elections,
-        'party_voted_elections': party_voted_elections,
+        # ...pozostałe zmienne...
     })
 
 @login_required
@@ -442,8 +450,38 @@ def cast_party_vote(request, election_id):
     })
 
 @login_required
-def party_vote_results(request, election_id):
-    election = Election.objects.get(id=election_id)
-    party_votes = PartyVote.objects.filter(election=election).values('party__name').annotate(total_votes=Count('id')).order_by('-total_votes')
+def cast_party_vote(request, election_id):
+    election = Election.objects.filter(id=election_id).first()
+    if not election:
+        messages.error(request, "Nie znaleziono wyborów.")
+        return redirect('voter_panel')
 
-    return render(request, 'wybory/voter/party_vote_results.html', {'election': election, 'party_votes': party_votes})
+    current_time = localtime(now()) 
+    is_voting_available = election.date <= current_time <= election.end_time
+
+    if not is_voting_available:
+        start_time = localtime(election.date).strftime("%d-%m-%Y %H:%M")
+        end_time = localtime(election.end_time).strftime("%d-%m-%Y %H:%M")
+        messages.error(request, f"Głosowanie na partie jest niedostępne. Możesz głosować tylko między {start_time} a {end_time}.")
+        return redirect('voter_panel')
+
+    if request.session.get(f'party_voted_{election_id}', False):
+        messages.error(request, "Już oddałeś głos na partię w tych wyborach.")
+        return redirect('voter_panel')
+
+    if request.method == 'POST':
+        form = PartyVoteForm(request.POST, election=election)
+        if form.is_valid():
+            party = form.cleaned_data['party']
+            PartyVote.objects.create(party=party, election=election)
+            request.session[f'party_voted_{election_id}'] = True
+            messages.success(request, "Twój głos na partię został oddany pomyślnie.")
+            return redirect('ballot')
+    else:
+        form = PartyVoteForm(election=election)
+
+    return render(request, 'wybory/voter/cast_party_vote.html', {
+        'election': election,
+        'form': form,
+        'is_voting_available': is_voting_available,
+    })

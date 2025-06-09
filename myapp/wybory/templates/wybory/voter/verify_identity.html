@@ -1,13 +1,22 @@
 {% extends 'wybory/base.html' %}
 
+{% load static %}
+
 {% block title %}Weryfikacja Tożsamości{% endblock %}
 
 {% block content %}
-<h2>Weryfikacja Tożsamości</h2>
-<p>Podaj swoje dane, aby zweryfikować swoje konto.</p>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Wyślij dane do weryfikacji</button>
-</form>
+
+<link rel="stylesheet" href="{% static 'css/verify_identity.css' %}">
+
+<div class="verification-container">
+    <h2 class="verification-title">Weryfikacja Tożsamości</h2>
+    <p class="verification-description">Podaj swoje dane, aby zweryfikować swoje konto.</p>
+    <form method="post" class="verification-form">
+        {% csrf_token %}
+        <div class="form-fields">
+            {{ form.as_p }}
+        </div>
+        <button type="submit" class="submit-button">Wyślij dane do weryfikacji</button>
+    </form>
+</div>
 {% endblock %}

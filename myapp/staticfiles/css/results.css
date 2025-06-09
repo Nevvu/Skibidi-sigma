@@ -1,0 +1,82 @@
+.results-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #f4f6f8;
+    border-radius: 12px;
+}
+
+.results-title {
+    text-align: center;
+    font-size: 2em;
+    color: #2c3e50;
+    margin-bottom: 30px;
+}
+
+.results-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.result-item {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.election-info {
+    font-size: 1.2em;
+    color: #34495e;
+    margin-bottom: 10px;
+}
+
+.election-title {
+    font-weight: bold;
+}
+
+.election-date {
+    font-style: italic;
+    margin-left: 5px;
+}
+
+.winner {
+    margin-bottom: 10px;
+    color: #2e7d32;
+}
+
+.vote-details {
+    margin-bottom: 10px;
+}
+
+.vote-list {
+    list-style-type: disc;
+    margin-left: 20px;
+}
+
+.vote-item {
+    margin: 5px 0;
+    color: #555;
+}
+
+.pdf-button {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #3498db;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+}
+
+.pdf-button:hover {
+    background-color: #2980b9;
+}
+
+.no-results {
+    text-align: center;
+    font-size: 1.2em;
+    color: #888;
+}
