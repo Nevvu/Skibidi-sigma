@@ -27,7 +27,6 @@ urlpatterns = [
     path('cast_vote/<int:election_id>/', views.cast_vote, name='cast_vote'),
     path('election/<int:election_id>/summary_pdf/', views.generate_election_summary_pdf, name='election_summary_pdf'),
     path('voter/notifications/', views.notifications, name='notifications'),
-    path('moderator/verify-voters/', views.verify_voters, name='verify_voters'),
     path('activate/<uidb64>/<token>/', activate_account, name='activate'),
     path('activate/<str:token>/', activate_account, name='activate'),
     path('cast_party_vote/<int:election_id>/', views.cast_party_vote, name='cast_party_vote'),

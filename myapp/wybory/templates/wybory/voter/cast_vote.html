@@ -10,14 +10,20 @@
   <h2>Oddaj Głos</h2>
 
   <p><strong>Wybory:</strong> {{ election.title }}</p>
-  <p><strong>Data:</strong> {{ election.date }}</p>
+  <p><strong>Data rozpoczęcia:</strong> {{ election.date|date:"d-m-Y H:i" }}</p>
+  <p><strong>Data zakończenia:</strong> {{ election.end_time|date:"d-m-Y H:i" }}</p>
 
-  <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit">Oddaj głos</button>
-  </form>
-
-  <p><a href="{% url 'ballot' %}">Powrót do karty do głosowania</a></p>
+  {% if is_voting_available %}
+      <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit">Oddaj głos</button>
+      </form>
+  {% else %}
+      <p class="error-message">
+          Głosowanie jest niedostępne. Możesz głosować tylko między 
+          {{ election.date|date:"d-m-Y H:i" }} a {{ election.end_time|date:"d-m-Y H:i" }}.
+      </p>
+  {% endif %}
 </div>
 {% endblock %}

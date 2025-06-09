@@ -28,15 +28,13 @@ from django.core.mail import EmailMultiAlternatives
 from .forms import CustomUserCreationForm as SignUpForm
 from .utils import account_activation_token
 from django.shortcuts import render
-
+from django.utils.timezone import now, localtime
 from django.contrib.auth import login
 import requests
 from django.conf import settings
-
 import matplotlib.pyplot as plt
 import io
 import base64
-
 from .models import Voter
 from .forms import PartyVoteForm
 
@@ -167,8 +165,15 @@ def candidate_search(request):
     })
 
 
+from django.utils.timezone import localtime, now
+
 def election_results(request):
-    completed_elections = Election.objects.filter(end_time__lte=datetime.datetime.now())
+    current_time = localtime(now()) 
+    completed_elections = Election.objects.filter(end_time__lte=current_time)  
+
+    if not completed_elections.exists():
+        messages.info(request, "Nie ma zakończonych wyborów. Wyniki będą dostępne po zakończeniu głosowania.")
+        return redirect('election_list') 
 
     results = []
     for election in completed_elections:
@@ -190,11 +195,27 @@ def election_detail(request, election_id):
     candidates = election.candidates.all()
     return render(request, 'wybory/voter/election_detail.html', {'election': election, 'candidates': candidates})
 
+
+from django.utils.timezone import now
+from django.contrib import messages
+from django.shortcuts import redirect, render
+
+from django.utils.timezone import now, localtime
+
 @login_required
 def cast_vote(request, election_id):
-    election = Election.objects.filter(id=election_id, date__gte=datetime.date.today()).first()
+    election = Election.objects.filter(id=election_id).first()
     if not election:
-        messages.error(request, "Nie znaleziono wyborów lub są one niedostępne.")
+        messages.error(request, "Nie znaleziono wyborów.")
+        return redirect('voter_panel')
+
+    current_time = localtime(now())  
+    is_voting_available = election.date <= current_time <= election.end_time
+
+    if not is_voting_available:
+        start_time = localtime(election.date).strftime("%d-%m-%Y %H:%M")
+        end_time = localtime(election.end_time).strftime("%d-%m-%Y %H:%M")
+        messages.error(request, f"Głosowanie jest niedostępne. Możesz głosować tylko między {start_time} a {end_time}.")
         return redirect('voter_panel')
 
     if request.session.get(f'voted_{election_id}', False):
@@ -206,16 +227,17 @@ def cast_vote(request, election_id):
         if form.is_valid():
             candidate = form.cleaned_data['candidate']
             Vote.objects.create(candidate=candidate, election=election)
-
             request.session[f'voted_{election_id}'] = True
-
             messages.success(request, "Twój głos został oddany pomyślnie.")
             return redirect('ballot')
     else:
         form = CastVoteForm(election=election)
 
-    return render(request, 'wybory/voter/cast_vote.html', {'election': election, 'form': form})
-
+    return render(request, 'wybory/voter/cast_vote.html', {
+        'election': election,
+        'form': form,
+        'is_voting_available': is_voting_available,  # Przekazanie informacji do szablonu
+    })
 
 
 # --- Voter-only views ---
@@ -368,33 +390,6 @@ def notifications(request):
 
 from django.contrib.auth.decorators import user_passes_test
 
-# --- Moderator-only views ---
-def is_moderator(user):
-    return user.groups.filter(name='Moderator').exists()
-
-@login_required
-@user_passes_test(is_moderator)
-def verify_voters(request):
-    voters = Voter.objects.filter(verification_status='pending')
-
-    if request.method == 'POST':
-        voter_id = request.POST.get('voter_id')
-        action = request.POST.get('action')  # 'approve' lub 'reject'
-        voter = get_object_or_404(Voter, id=voter_id)
-
-        if action == 'approve':
-            voter.verification_status = 'approved'
-            voter.save()
-            messages.success(request, f"Użytkownik {voter.name} został zatwierdzony.")
-        elif action == 'reject':
-            voter.verification_status = 'rejected'
-            voter.save()
-            messages.success(request, f"Użytkownik {voter.name} został odrzucony.")
-
-        return redirect('verify_voters')
-
-    return render(request, 'wybory/moderator/verify_voters.html', {'voters': voters})
-
 
 def home(request):
     presidential_elections = Election.objects.filter(election_type__name="Prezydenckie")
@@ -405,11 +400,24 @@ def home(request):
         'parliamentary_elections': parliamentary_elections,
     })
 
+
+
+
+
 @login_required
 def cast_party_vote(request, election_id):
-    election = Election.objects.filter(id=election_id, date__gte=datetime.date.today()).first()
+    election = Election.objects.filter(id=election_id).first()
     if not election:
-        messages.error(request, "Nie znaleziono wyborów lub są one niedostępne.")
+        messages.error(request, "Nie znaleziono wyborów.")
+        return redirect('voter_panel')
+
+    current_time = localtime(now()) 
+    is_voting_available = election.date <= current_time <= election.end_time
+
+    if not is_voting_available:
+        start_time = localtime(election.date).strftime("%d-%m-%Y %H:%M")
+        end_time = localtime(election.end_time).strftime("%d-%m-%Y %H:%M")
+        messages.error(request, f"Głosowanie na partie jest niedostępne. Możesz głosować tylko między {start_time} a {end_time}.")
         return redirect('voter_panel')
 
     if request.session.get(f'party_voted_{election_id}', False):
@@ -427,10 +435,10 @@ def cast_party_vote(request, election_id):
     else:
         form = PartyVoteForm(election=election)
 
-    # Przekazanie formularza i wyborów do szablonu
     return render(request, 'wybory/voter/cast_party_vote.html', {
         'election': election,
         'form': form,
+        'is_voting_available': is_voting_available, 
     })
 
 @login_required
