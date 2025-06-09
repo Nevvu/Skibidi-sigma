@@ -37,19 +37,18 @@ import io
 import base64
 from .models import Voter
 from .forms import PartyVoteForm
-
 import logging
 
-# logger = logging.getLogger('myapp')
+logger = logging.getLogger('myapp')
 
-# def my_view(request):
-#     logger.info("To jest log informacyjny")
-#     logger.error("Coś poszło nie tak!")
+def my_view(request):
+    logger.info("To jest log informacyjny")
+    logger.error("Coś poszło nie tak!")
 
 
-# def index(request):
-#     # logger.info("Strona główna została odwiedzona")
-#     return render(request, 'signup.html')
+def index(request):
+    # logger.info("Strona główna została odwiedzona")
+    return render(request, 'signup.html')
 
 def register_view(request):
     if request.method == 'POST':
@@ -215,6 +214,11 @@ from django.utils.timezone import now, localtime
 
 @login_required
 def cast_vote(request, election_id):
+    voter = Voter.objects.filter(user=request.user).first()
+    if not voter or voter.verification_status not in ['eligible', 'approved']:
+        messages.error(request, "Nie masz uprawnień do głosowania. Zweryfikuj swoje dane.")
+        return redirect('voter_panel')
+
     election = Election.objects.filter(id=election_id).first()
     if not election:
         messages.error(request, "Nie znaleziono wyborów.")
@@ -409,48 +413,13 @@ def home(request):
     })
 
 
-
-
-
 @login_required
 def cast_party_vote(request, election_id):
-    election = Election.objects.filter(id=election_id).first()
-    if not election:
-        messages.error(request, "Nie znaleziono wyborów.")
+    voter = Voter.objects.filter(user=request.user).first()
+    if not voter or voter.verification_status not in ['eligible', 'approved']:
+        messages.error(request, "Nie masz uprawnień do głosowania na partię. Zweryfikuj swoje dane.")
         return redirect('voter_panel')
 
-    current_time = localtime(now()) 
-    is_voting_available = election.date <= current_time <= election.end_time
-
-    if not is_voting_available:
-        start_time = localtime(election.date).strftime("%d-%m-%Y %H:%M")
-        end_time = localtime(election.end_time).strftime("%d-%m-%Y %H:%M")
-        messages.error(request, f"Głosowanie na partie jest niedostępne. Możesz głosować tylko między {start_time} a {end_time}.")
-        return redirect('voter_panel')
-
-    if request.session.get(f'party_voted_{election_id}', False):
-        messages.error(request, "Już oddałeś głos na partię w tych wyborach.")
-        return redirect('voter_panel')
-
-    if request.method == 'POST':
-        form = PartyVoteForm(request.POST, election=election)
-        if form.is_valid():
-            party = form.cleaned_data['party']
-            PartyVote.objects.create(party=party, election=election)
-            request.session[f'party_voted_{election_id}'] = True
-            messages.success(request, "Twój głos na partię został oddany pomyślnie.")
-            return redirect('ballot')
-    else:
-        form = PartyVoteForm(election=election)
-
-    return render(request, 'wybory/voter/cast_party_vote.html', {
-        'election': election,
-        'form': form,
-        'is_voting_available': is_voting_available, 
-    })
-
-@login_required
-def cast_party_vote(request, election_id):
     election = Election.objects.filter(id=election_id).first()
     if not election:
         messages.error(request, "Nie znaleziono wyborów.")

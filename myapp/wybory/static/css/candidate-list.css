@@ -67,8 +67,8 @@
 /* Obrazek po prawej — widoczny cały czas */
 .candidate-image {
     opacity: 1;
-    width: 150px;
-    height: 300px;
+    width: 80px;
+    height: 80px;
     object-fit: cover;
     border-radius: 0 12px 12px 0;
     margin-left: 20px;
@@ -124,9 +124,10 @@
 }
 
 .party-name {
-    font-weight: 600;
+    font-weight: bold;
     font-size: 64px;
-    color: #444;
+    display: block;
+    color: #222;
 }
 
 .party-image {
@@ -136,6 +137,8 @@
     border-radius: 8px;
     margin-left: 15px;
 }
+
+
 
 /* Nagłówki i paragrafy */
 h2, h3 {

@@ -1,18 +1,18 @@
 .cast-vote-container {
     max-width: 600px;
     margin: 2rem auto;
-    padding: 2rem;
-    background-color: #fdfdfd;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
     font-family: Arial, sans-serif;
 }
 
 .cast-vote-title {
     text-align: center;
     font-size: 2rem;
-    margin-bottom: 1.5rem;
     color: #333;
+    margin-bottom: 1.5rem;
 }
 
 .election-info p {
@@ -22,11 +22,7 @@
 }
 
 .vote-form {
-    margin-top: 1.5rem;
-}
-
-.form-fields p {
-    margin-bottom: 1rem;
+    margin-top: 1rem;
 }
 
 .vote-form label {
@@ -42,21 +38,29 @@
 }
 
 .submit-vote-button {
-    display: block;
-    width: 100%;
-    padding: 0.75rem;
-    margin-top: 1rem;
-    background-color: #0066cc;
+    background-color: #28a745;
     color: white;
+    padding: 0.6rem 1.2rem;
     border: none;
     border-radius: 8px;
-    font-size: 1rem;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
 .submit-vote-button:hover {
-    background-color: #004999;
+    background-color: #218838;
+}
+
+.cast-vote-container a {
+    display: block;
+    text-align: center;
+    margin-top: 1.5rem;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.cast-vote-container a:hover {
+    text-decoration: underline;
 }
 
 .error-message {

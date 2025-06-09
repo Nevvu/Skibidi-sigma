@@ -42,8 +42,10 @@
                 </li>
             {% endfor %}
         </ul>
-    {% elif selected_election_id %}
-        <p>Brak kandydatów dla wybranych wyborów.</p>
+    {% elif selected_election_id and candidates is not None %}
+        {% if election_type == "Prezydenckie" or election_type == "InnyTypZKandydatami" %}
+            <p>Brak kandydatów dla wybranych wyborów.</p>
+        {% endif %}
     {% endif %}
     
     {% if parties %}
@@ -60,7 +62,7 @@
             </li>
         {% endfor %}
     </ul>
-    {% elif selected_election_id %}
+    {% elif selected_election_id and election_type == "Parlamentarne" %}
         <p>Brak partii dla wybranych wyborów.</p>
     {% endif %}
 </div>
