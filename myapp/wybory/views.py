@@ -248,8 +248,8 @@ def election_results(request):
     try:
         # Połączenie z bazą Oracle (uzupełnij danymi do logowania!)
         conn = oracledb.connect(
-            user='SYSTEM',
-            password='admin',
+            user='app_identity',
+            password='App#123',
             dsn='localhost:1521/XEPDB1'
         )
         cur = conn.cursor()
@@ -321,8 +321,8 @@ def cast_vote(request, election_id):
             candidate = form.cleaned_data['candidate']
             try:
                 conn = oracledb.connect(
-                    user='SYSTEM',
-                    password='admin',
+                     user='app_identity',
+                    password='App#123',
                     dsn='localhost:1521/XEPDB1'
                 )
                 cur = conn.cursor()
@@ -529,8 +529,8 @@ def cast_party_vote(request, election_id):
             party = form.cleaned_data['party']
             try:
                 conn = oracledb.connect(
-                    user='SYSTEM',
-                    password='admin',
+                    user='app_identity',
+                    password='App#123',
                     dsn='localhost:1521/XEPDB1'
                 )
                 cur = conn.cursor()

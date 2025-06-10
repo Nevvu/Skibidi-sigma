@@ -114,8 +114,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.oracle',
         'NAME': 'localhost:1521/XEPDB1',         # Service name z Twojej konfiguracji
-        'USER': 'SYSTEM',     # Username
-        'PASSWORD': 'admin',  # Tutaj wpisz swoje hasło
+         'USER':'app_identity',    # Username
+        'PASSWORD': 'App#123',  # Tutaj wpisz swoje hasło
                     # Port
     }
 }
