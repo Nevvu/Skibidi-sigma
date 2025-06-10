@@ -41,7 +41,7 @@ import logging
 import oracledb
 logger = logging.getLogger('myapp')
 from rest_framework import serializers, viewsets
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, AllowAny
 
 
 # --- Serializery ---
@@ -76,32 +76,59 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'is_active']
 
 # --- ViewSety ---
-class VoterViewSet(viewsets.ReadOnlyModelViewSet):
+class VoterViewSet(viewsets.ModelViewSet):
     queryset = Voter.objects.all()
     serializer_class = VoterSerializer
-    permission_classes = [IsAdminUser]
 
-class ElectionViewSet(viewsets.ReadOnlyModelViewSet):
+    def get_permissions(self):
+        # Tylko admin może wszystko, zwykły użytkownik nie ma dostępu
+        return [IsAdminUser()]
+
+class VoteViewSet(viewsets.ModelViewSet):
+    queryset = Vote.objects.all()
+    serializer_class = VoteSerializer
+
+    def get_permissions(self):
+        # Tylko admin może wszystko, zwykły użytkownik nie ma dostępu
+        return [IsAdminUser()]
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def get_permissions(self):
+        # Tylko admin może wszystko, zwykły użytkownik nie ma dostępu
+        return [IsAdminUser()]
+
+class ElectionViewSet(viewsets.ModelViewSet):
     queryset = Election.objects.all()
     serializer_class = ElectionSerializer
 
-class CandidateViewSet(viewsets.ReadOnlyModelViewSet):
+    def get_permissions(self):
+        # GET (list/retrieve) dla wszystkich, reszta tylko admin
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAdminUser()]
+
+class CandidateViewSet(viewsets.ModelViewSet):
     queryset = Candidate.objects.all()
     serializer_class = CandidateSerializer
 
-class PartyViewSet(viewsets.ReadOnlyModelViewSet):
+    def get_permissions(self):
+        # GET (list/retrieve) dla wszystkich, reszta tylko admin
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAdminUser()]
+
+class PartyViewSet(viewsets.ModelViewSet):
     queryset = Party.objects.all()
     serializer_class = PartySerializer
 
-class VoteViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Vote.objects.all()
-    serializer_class = VoteSerializer
-    permission_classes = [IsAdminUser]
-
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
+    def get_permissions(self):
+        # GET (list/retrieve) dla wszystkich, reszta tylko admin
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAdminUser()]
 
 
 def my_view(request):

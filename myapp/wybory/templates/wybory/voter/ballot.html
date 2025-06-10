@@ -53,44 +53,10 @@
         {% endfor %}
     </ul>
 
-    <h3 class="vote-section-title">Głosowanie na partie</h3>
-    <ul class="vote-list">
-        {% for election in parliamentary_elections %}
-            <li class="vote-item">
-                <div class="vote-info">
-                    <strong>{{ election.title }}</strong><br>
-                    <span class="vote-date">{{ election.date|date:"d M Y" }}</span>
-                </div>
-                <div class="vote-action">
-                    {% if election.id in party_voted_elections %}
-                        <span class="vote-status voted">Głos oddany na partię</span>
-                    {% else %}
-                        <a href="{% url 'cast_party_vote' election.id %}" class="vote-link">Oddaj głos na partię</a>
-                    {% endif %}
-                </div>
-            </li>
-        {% endfor %}
-    </ul>
+
 </div>
 
-    <h3 class="vote-section-title">Głosowanie na partie</h3>
-    <ul class="vote-list">
-        {% for election in parliamentary_elections %}
-            <li class="vote-item">
-                <div class="vote-info">
-                    <strong>{{ election.title }}</strong><br>
-                    <span class="vote-date">{{ election.date|date:"d M Y" }}</span>
-                </div>
-                <div class="vote-action">
-                    {% if election.id in party_voted_elections %}
-                        <span class="vote-status voted">Głos oddany na partię</span>
-                    {% else %}
-                        <a href="{% url 'cast_party_vote' election.id %}" class="vote-link">Oddaj głos na partię</a>
-                    {% endif %}
-                </div>
-            </li>
-        {% endfor %}
-    </ul>
+
 </div>
 
 {% endblock %}

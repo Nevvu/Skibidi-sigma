@@ -13,42 +13,123 @@ from wybory.models import (
 )
 
 def seed():
-    # Użytkownik + domyślny voter
-    user2 = User.objects.create_user(username="andrzej_nowak", email="nowak@example.com", password="test1234")
+    NUM_USERS = 500
+    NUM_PARTIES = 10
+    NUM_CANDIDATES = 10
 
-   
-    presidential = ElectionType.objects.create(name="Prezydenckie", description="Wybory prezydenckie 2025")
+    print(" Czyszczenie istniejących danych...")
+    Vote.objects.all().delete()
+    ElectionResult.objects.all().delete()
+    Candidate.objects.all().delete()
+    PartyVote.objects.all().delete()
+    Party.objects.all().delete()
+    VotingCriteria.objects.all().delete()
+    Election.objects.all().delete()
+    ElectionType.objects.all().delete()
+    User.objects.filter(username__startswith="user_").delete()
 
-    # Wybory
-    election = Election.objects.create(
-        title="Wybory 2025",
-        election_type=presidential,
+    print(" Tworzenie typów wyborów...")
+    prezydenckie = ElectionType(name="Prezydenckie", description="Wybory prezydenckie 2025")
+    parlamentarne = ElectionType(name="Parlamentarne", description="Wybory parlamentarne 2025")
+    prezydenckie.save()
+    parlamentarne.save()
+
+    print(" Tworzenie wyborów...")
+    prezydent_election = Election(
+        title="Wybory Prezydenckie 2025",
+        election_type=prezydenckie,
         date=datetime.now(),
         end_time=datetime.now() + timedelta(days=1),
-        description="Opis wyborów prezydenckich"
+        description="Wybory prezydenckie"
     )
+    prezydent_election.save()
 
-    # Partie
-    party1 = Party.objects.create(name="Partia ABC", description="Partia A - demo", election=election)
-    party2 = Party.objects.create(name="Partia CBD", description="Partia B - demo", election=election)
+    parlament_election = Election(
+        title="Wybory Parlamentarne 2025",
+        election_type=parlamentarne,
+        date=datetime.now(),
+        end_time=datetime.now() + timedelta(days=1),
+        description="Wybory parlamentarne"
+    )
+    parlament_election.save()
 
-    # Kandydaci
-    cand1 = Candidate.objects.create(name="Kandydat Abc", election=election, party=party1)
-    cand2 = Candidate.objects.create(name="Kandydat Bcd", election=election, party=party2)
+    print(" Tworzenie partii...")
+    parties = []
+    for i in range(NUM_PARTIES):
+        partia = Party(
+            name=f"Partia_{i}",
+            description=f"Partia demo {i}",
+            election=prezydent_election if i < 5 else parlament_election
+        )
+        partia.save()
+        parties.append(partia)
 
-    # Kryteria głosowania
-    VotingCriteria.objects.create(election=election, age_min=18, age_max=120, residency_required=True)
+    print(" Tworzenie kandydatów...")
+    candidates = []
+    for i in range(5):
+        kand = Candidate(
+            name=f"Kandydat_{i}",
+            election=prezydent_election,
+            party=parties[i]
+        )
+        kand.save()
+        candidates.append(kand)
 
-    # Głosy
-    Vote.objects.create(candidate=cand1, election=election)
-    Vote.objects.create(candidate=cand2, election=election)
-    PartyVote.objects.create(party=party1, election=election)
+    for i in range(5):
+        kand = Candidate(
+            name=f"Kandydat_{i+5}",
+            election=parlament_election,
+            party=parties[5 + i]
+        )
+        kand.save()
+        candidates.append(kand)
 
-    # Wyniki
-    ElectionResult.objects.create(election=election, candidate=cand1, votes_count=1)
-    ElectionResult.objects.create(election=election, candidate=cand2, votes_count=1)
+    print(" Dodawanie kryteriów głosowania...")
+    vc1 = VotingCriteria(election=prezydent_election, age_min=18, age_max=120, residency_required=True)
+    vc1.save()
+    vc2 = VotingCriteria(election=parlament_election, age_min=18, age_max=120, residency_required=True)
+    vc2.save()
 
-    print("Dane demo zostały załadowane.")
+    print("Tworzenie 100 000 użytkowników...")
+    for i in range(NUM_USERS):
+        u = User(username=f"usertest_{i}", email=f"user_{i}@example.com")
+        u.set_password("test1234")
+        u.save()
+        if i % 10000 == 0:
+            print(f"  → {i} użytkowników stworzonych")
+
+    print("Tworzenie głosów...")
+    for i in range(500):
+        v1 = Vote(candidate=candidates[0], election=prezydent_election)
+        v1.save()
+        v2 = Vote(candidate=candidates[1], election=prezydent_election)
+        v2.save()
+        if i % 10000 == 0:
+            print(f"  → {i*2} głosów prezydenckich dodanych")
+
+    for i in range(50_000):
+        v1 = Vote(candidate=candidates[5], election=parlament_election)
+        v1.save()
+        v2 = Vote(candidate=candidates[6], election=parlament_election)
+        v2.save()
+        if i % 10000 == 0:
+            print(f"  → {i*2} głosów parlamentarnych dodanych")
+
+    print(" Dodawanie wyników wyborów...")
+    er1 = ElectionResult(election=prezydent_election, candidate=candidates[0], votes_count=50000)
+    er1.save()
+    er2 = ElectionResult(election=prezydent_election, candidate=candidates[1], votes_count=50000)
+    er2.save()
+    er3 = ElectionResult(election=parlament_election, candidate=candidates[5], votes_count=50000)
+    er3.save()
+    er4 = ElectionResult(election=parlament_election, candidate=candidates[6], votes_count=50000)
+    er4.save()
+
+    print("🏷️ Tworzenie party votes...")
+    PartyVote(party=parties[0], election=prezydent_election).save()
+    PartyVote(party=parties[5], election=parlament_election).save()
+
+    print(" Załadowano dane demo do bazy!")
 
 if __name__ == "__main__":
     seed()
