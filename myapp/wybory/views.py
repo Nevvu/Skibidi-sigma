@@ -40,6 +40,8 @@ from .forms import PartyVoteForm
 import logging
 import oracledb
 logger = logging.getLogger('myapp')
+from rest_framework import serializers, viewsets
+from rest_framework.permissions import IsAdminUser
 
 
 # --- Serializery ---
@@ -288,13 +290,8 @@ def cast_vote(request, election_id):
     current_time = localtime(now())  
     is_voting_available = election.date <= current_time <= election.end_time
 
-    if not is_voting_available:
-        start_time = localtime(election.date).strftime("%d-%m-%Y %H:%M")
-        end_time = localtime(election.end_time).strftime("%d-%m-%Y %H:%M")
-        messages.error(request, f"Głosowanie jest niedostępne. Możesz głosować tylko między {start_time} a {end_time}.")
-        return redirect('voter_panel')
-
-    if request.session.get(f'voted_{election_id}', False):
+    # Sprawdzenie w VotersLog, czy użytkownik już głosował w tych wyborach
+    if VotersLog.objects.filter(voter=voter, election=election).exists():
         messages.error(request, "Już oddałeś głos w tych wyborach.")
         return redirect('voter_panel')
 
@@ -303,6 +300,8 @@ def cast_vote(request, election_id):
         if form.is_valid():
             candidate = form.cleaned_data['candidate']
             Vote.objects.create(candidate=candidate, election=election)
+            # Dodaj wpis do logu
+            VotersLog.objects.create(voter=voter, election=election)
             request.session[f'voted_{election_id}'] = True
             messages.success(request, "Twój głos został oddany pomyślnie.")
             return redirect('ballot')
@@ -312,7 +311,7 @@ def cast_vote(request, election_id):
     return render(request, 'wybory/voter/cast_vote.html', {
         'election': election,
         'form': form,
-        'is_voting_available': is_voting_available,  # Przekazanie informacji do szablonu
+        'is_voting_available': is_voting_available,
     })
 
 

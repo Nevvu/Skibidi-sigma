@@ -118,3 +118,11 @@ class ElectionResult(models.Model):
     election = models.ForeignKey(Election, on_delete=models.CASCADE)
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
     votes_count = models.PositiveIntegerField(default=0)
+
+class VotersLog(models.Model):
+    voter = models.ForeignKey('Voter', on_delete=models.CASCADE)
+    election = models.ForeignKey('Election', on_delete=models.CASCADE)
+    voted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.voter} głosował w {self.election} ({self.voted_at})"
