@@ -35,7 +35,7 @@ from django.conf import settings
 import matplotlib.pyplot as plt
 import io
 import base64
-from .models import Voter
+from .models import Voter, VotersLog
 from .forms import PartyVoteForm
 import logging
 import oracledb
@@ -245,18 +245,29 @@ def candidate_search(request):
 from django.utils.timezone import localtime, now
 
 def election_results(request):
-    current_time = localtime(now()) 
-    completed_elections = Election.objects.filter(end_time__lte=current_time)  
-
-    results = []
-    for election in completed_elections:
-        votes = Vote.objects.filter(election=election).values('candidate__name').annotate(vote_count=Count('id')).order_by('-vote_count')
-        winner = votes.first() if votes else None
-        results.append({
-            'election': election,
-            'winner': winner['candidate__name'] if winner else "Brak głosów",
-            'votes': votes,
-        })
+    try:
+        # Połączenie z bazą Oracle (uzupełnij danymi do logowania!)
+        conn = oracledb.connect(
+            user='SYSTEM',
+            password='admin',
+            dsn='localhost:1521/XEPDB1'
+        )
+        cur = conn.cursor()
+        cur.execute('SELECT ELECTION_ID, TITLE, CANDIDATE_ID, CANDIDATE_NAME, VOTES FROM ELECTION_RESULTS')
+        results = [
+            {
+                'election_id': row[0],
+                'title': row[1],
+                'candidate_id': row[2],
+                'candidate_name': row[3],
+                'votes': row[4]
+            }
+            for row in cur.fetchall()
+        ]
+        cur.close()
+        conn.close()
+    except Exception as e:
+        return HttpResponse(f"Błąd połączenia z Oracle: {e}")
 
     return render(request, 'wybory/public/results.html', {'results': results})
 
@@ -290,21 +301,39 @@ def cast_vote(request, election_id):
     current_time = localtime(now())  
     is_voting_available = election.date <= current_time <= election.end_time
 
-    # Sprawdzenie w VotersLog, czy użytkownik już głosował w tych wyborach
-    if VotersLog.objects.filter(voter=voter, election=election).exists():
+
+    if not is_voting_available:
+        start_time = localtime(election.date).strftime("%d-%m-%Y %H:%M")
+        end_time = localtime(election.end_time).strftime("%d-%m-%Y %H:%M")
+        messages.error(request, f"Głosowanie jest niedostępne. Możesz głosować tylko między {start_time} a {end_time}.")
+        return redirect('voter_panel')
+    
+
+    if VotersLog.objects.filter(voter_id=voter.id, election_id=election.id).exists():
         messages.error(request, "Już oddałeś głos w tych wyborach.")
         return redirect('voter_panel')
+    
+    
 
     if request.method == 'POST':
         form = CastVoteForm(request.POST, election=election)
         if form.is_valid():
             candidate = form.cleaned_data['candidate']
-            Vote.objects.create(candidate=candidate, election=election)
-            # Dodaj wpis do logu
-            VotersLog.objects.create(voter=voter, election=election)
-            request.session[f'voted_{election_id}'] = True
-            messages.success(request, "Twój głos został oddany pomyślnie.")
-            return redirect('ballot')
+            try:
+                conn = oracledb.connect(
+                    user='SYSTEM',
+                    password='admin',
+                    dsn='localhost:1521/XEPDB1'
+                )
+                cur = conn.cursor()
+                cur.callproc('voting_pkg.cast_vote', [voter.id, candidate.id, election.id])
+                cur.close()
+                conn.close()
+                messages.success(request, "Twój głos został oddany!")
+                return redirect('ballot')
+            except oracledb.DatabaseError as e:
+                messages.error(request, f"Błąd bazy Oracle: {e}")
+                return redirect('voter_panel')
     else:
         form = CastVoteForm(election=election)
 
@@ -494,18 +523,36 @@ def cast_party_vote(request, election_id):
         messages.error(request, f"Głosowanie na partie jest niedostępne. Możesz głosować tylko między {start_time} a {end_time}.")
         return redirect('voter_panel')
 
-    if request.session.get(f'party_voted_{election_id}', False):
-        messages.error(request, "Już oddałeś głos na partię w tych wyborach.")
-        return redirect('voter_panel')
-
     if request.method == 'POST':
         form = PartyVoteForm(request.POST, election=election)
         if form.is_valid():
             party = form.cleaned_data['party']
-            PartyVote.objects.create(party=party, election=election)
-            request.session[f'party_voted_{election_id}'] = True
-            messages.success(request, "Twój głos na partię został oddany pomyślnie.")
-            return redirect('ballot')
+            try:
+                conn = oracledb.connect(
+                    user='SYSTEM',
+                    password='admin',
+                    dsn='localhost:1521/XEPDB1'
+                )
+                cur = conn.cursor()
+                # Wywołanie funkcji SQL obsługującej głosowanie na partię
+                result = cur.callfunc('cast_party_vote', int, [voter.id, party.id, election.id])
+                cur.close()
+                conn.close()
+                if result == 1:
+                    request.session[f'party_voted_{election_id}'] = True
+                    messages.success(request, "Twój głos na partię został oddany pomyślnie.")
+                    return redirect('ballot')
+                else:
+                    messages.error(request, "Nie udało się oddać głosu na partię.")
+                    return redirect('voter_panel')
+            except oracledb.DatabaseError as e:
+                error, = e.args
+                # Obsługa wyjątku z RAISE_APPLICATION_ERROR w SQL
+                if hasattr(error, 'code') and error.code == 20001:
+                    messages.error(request, "Już oddałeś głos w tych wyborach.")
+                else:
+                    messages.error(request, f"Błąd bazy Oracle: {e}")
+                return redirect('voter_panel')
     else:
         form = PartyVoteForm(election=election)
 

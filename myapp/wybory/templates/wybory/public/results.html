@@ -1,39 +1,35 @@
 {% extends 'wybory/base.html' %}
 
-{% load static %}
-
-{% block title %}Wyniki Wyborów{% endblock %}
+{% block title %}Wyniki Wyborów na żywo{% endblock %}
 
 {% block content %}
-
-<link rel="stylesheet" href="{% static 'css/results.css' %}">
-
 <div class="results-container">
-    <h2 class="results-title">Wyniki Wyborów</h2>
-
+    <h2 class="results-title">Wyniki Wyborów na żywo</h2>
     {% if results %}
-        <ul class="results-list">
-            {% for result in results %}
-                <li class="result-item">
-                    <div class="election-info">
-                        <strong class="election-title">{{ result.election.title }}</strong>
-                        <span class="election-date">({{ result.election.date|date:"d M Y" }})</span>
-                    </div>
-                    <div class="vote-details">
-                        <strong>Wyniki:</strong>
-                        <ul class="vote-list">
-                            {% for vote in result.votes %}
-                                <li class="vote-item">{{ vote.candidate__name }}: {{ vote.vote_count }} głosów</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    <a href="{% url 'election_summary_pdf' result.election.id %}" target="_blank" class="pdf-button">📄 Pobierz PDF z wynikami</a>
-                </li>
-            {% endfor %}
-        </ul>
+        <div class="table-responsive">
+            <table class="table-results">
+                <thead>
+                    <tr>
+                        <th>Tytuł wyborów</th>
+                        <th>Kandydat</th>
+                        <th>Liczba głosów</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                        <tr>
+                            <td>{{ result.title }}</td>
+                            <td>{{ result.candidate_name }}</td>
+                            <td class="fw-bold">{{ result.votes }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     {% else %}
-        <p class="no-results">Brak zakończonych wyborów. Wyniki będą dostępne po zakończeniu głosowania.</p>
+        <div class="no-results">
+            Brak wyników do wyświetlenia.
+        </div>
     {% endif %}
 </div>
-
 {% endblock %}
