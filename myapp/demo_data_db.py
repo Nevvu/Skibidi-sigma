@@ -9,7 +9,7 @@ django.setup()
 from django.contrib.auth.models import User
 from wybory.models import (
     ElectionType, Election, Party, Candidate, Vote,
-    PartyVote, VotingCriteria, ElectionResult
+    PartyVote, VotingCriteria, ElectionResult, VotersLog
 )
 
 def seed():
@@ -17,7 +17,7 @@ def seed():
     NUM_PARTIES = 10
     NUM_CANDIDATES = 10
 
-    print(" Czyszczenie istniejących danych...")
+    print("Czyszczenie istniejących danych...")
     Vote.objects.all().delete()
     ElectionResult.objects.all().delete()
     Candidate.objects.all().delete()
@@ -26,7 +26,7 @@ def seed():
     VotingCriteria.objects.all().delete()
     Election.objects.all().delete()
     ElectionType.objects.all().delete()
-    User.objects.filter(username__startswith="user_").delete()
+    #User.objects.filter(username__startswith="user_").delete()
 
     print(" Tworzenie typów wyborów...")
     prezydenckie = ElectionType(name="Prezydenckie", description="Wybory prezydenckie 2025")
@@ -90,6 +90,20 @@ def seed():
     vc2 = VotingCriteria(election=parlament_election, age_min=18, age_max=120, residency_required=True)
     vc2.save()
 
+
+    print("Tworzenie 50 000 wpisów do voterslog...")
+
+
+    for i in range(50000):
+        VotersLog.objects.create(
+            voter_id=(i % NUM_USERS) + 363,  # zakładając, że id użytkowników są od 1 do NUM_USERS
+            election=parlament_election,
+            voted_at=datetime.now()
+        )
+        if i % 10000 == 0:
+            print(f"  → {i} wpisów voterslog dodanych")
+
+    
     print("Tworzenie 100 000 użytkowników...")
     for i in range(NUM_USERS):
         u = User(username=f"usertest_{i}", email=f"user_{i}@example.com")
@@ -98,7 +112,7 @@ def seed():
         if i % 10000 == 0:
             print(f"  → {i} użytkowników stworzonych")
 
-    print("Tworzenie głosów...")
+    print("Dodawanie głosów...")
     for i in range(500):
         v1 = Vote(candidate=candidates[0], election=prezydent_election)
         v1.save()
