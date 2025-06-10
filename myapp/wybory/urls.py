@@ -2,8 +2,30 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 from .views import activate_account
-from django.conf import settings
-from django.conf.urls.static import static
+from django.urls import path, include
+from rest_framework import routers
+from .views import UserViewSet, VoterViewSet, ElectionViewSet, CandidateViewSet, PartyViewSet, VoteViewSet
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+router = routers.DefaultRouter()
+router.register(r'users', UserViewSet)
+router.register(r'voters', VoterViewSet)
+router.register(r'elections', ElectionViewSet)
+router.register(r'candidates', CandidateViewSet)
+router.register(r'parties', PartyViewSet)
+router.register(r'votes', VoteViewSet)
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Moje API",
+      default_version='v1',
+      description="Opis API",
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
     path('', views.home, name='home'), 
@@ -30,5 +52,11 @@ urlpatterns = [
     path('activate/<uidb64>/<token>/', activate_account, name='activate'),
     path('activate/<str:token>/', activate_account, name='activate'),
     path('cast_party_vote/<int:election_id>/', views.cast_party_vote, name='cast_party_vote'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('api/', include(router.urls)),
+    path('swagger(<format>\.json|\.yaml)', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+]
+
+
 

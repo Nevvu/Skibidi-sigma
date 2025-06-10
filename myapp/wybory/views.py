@@ -38,8 +38,69 @@ import base64
 from .models import Voter
 from .forms import PartyVoteForm
 import logging
-
+import oracledb
 logger = logging.getLogger('myapp')
+
+
+# --- Serializery ---
+class VoterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Voter
+        fields = ['id', 'user', 'name', 'email', 'verification_status']
+
+class ElectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Election
+        fields = ['id', 'title', 'date', 'end_time', 'election_type']
+
+class CandidateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Candidate
+        fields = ['id', 'name', 'party', 'election']
+
+class PartySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Party
+        fields = ['id', 'name']
+
+class VoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vote
+        fields = ['id', 'candidate', 'election']
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'is_active']
+
+# --- ViewSety ---
+class VoterViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Voter.objects.all()
+    serializer_class = VoterSerializer
+    permission_classes = [IsAdminUser]
+
+class ElectionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Election.objects.all()
+    serializer_class = ElectionSerializer
+
+class CandidateViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Candidate.objects.all()
+    serializer_class = CandidateSerializer
+
+class PartyViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Party.objects.all()
+    serializer_class = PartySerializer
+
+class VoteViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Vote.objects.all()
+    serializer_class = VoteSerializer
+    permission_classes = [IsAdminUser]
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminUser]
+
 
 def my_view(request):
     logger.info("To jest log informacyjny")

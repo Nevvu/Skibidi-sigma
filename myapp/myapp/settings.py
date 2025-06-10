@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "wybory",
+    'rest_framework',
+    'drf_yasg',
     #'captcha',
 ]
 
@@ -110,16 +112,13 @@ WSGI_APPLICATION = "myapp.wsgi.application"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ewybory', 
-        'USER': 'postgres', 
-        'PASSWORD': 'ctsg.pl7',        
-        'HOST': 'localhost',        
-        'PORT': '5432',            
-
+        'ENGINE': 'django.db.backends.oracle',
+        'NAME': 'localhost:1521/XEPDB1',         # Service name z Twojej konfiguracji
+        'USER': 'SYSTEM',     # Username
+        'PASSWORD': 'admin',  # Tutaj wpisz swoje hasło
+                    # Port
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
