@@ -1,19 +1,39 @@
 {% extends 'wybory/base.html' %}
 
+{% load static %}
+
 {% block title %}Strona główna - E-Wybory{% endblock %}
 
 {% block content %}
-<h2>Sondaże:</h2>
-<h2>Dostępne wybory:</h2>
+
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+
+
+<div class="wrapper">
+<h2>Wybory prezydenckie</h2>
 <ul>
-    {% for election in elections %}
+    {% for election in presidential_elections %}
         <li>
             <a href="{% url 'candidate_list' election.id %}">
-                {{ election.title }} ({{ election.election_type.name }})
+                Wybory {{ election.election_type.name }} {{ election.title }} 
             </a>
             <p>{{ election.description }}</p>
             <p>Data: {{ election.date }}</p>
         </li>
     {% endfor %}
 </ul>
+
+<h2>Wybory parlamentarne</h2>
+<ul>
+    {% for election in parliamentary_elections %}
+        <li>
+            <a href="{% url 'candidate_list' election.id %}">
+                Wybory {{ election.election_type.name }} {{ election.title }} 
+            </a>
+            <p>{{ election.description }}</p>
+            <p>Data: {{ election.date }}</p>
+        </li>
+    {% endfor %}
+</ul>
+</div>
 {% endblock %}

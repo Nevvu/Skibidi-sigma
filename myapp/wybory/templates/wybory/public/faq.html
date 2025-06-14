@@ -1,12 +1,28 @@
 {% extends 'wybory/base.html' %}
+{% load static %}
 
 {% block title %}FAQ - Pomoc{% endblock %}
 
 {% block content %}
-<h2>Najczęściej Zadawane Pytania</h2>
-<ul>
-    <li><strong>Jak mogę oddać głos?</strong> - Kliknij na "Karta do głosowania" po zalogowaniu.</li>
-    <li><strong>Jak sprawdzić wyniki?</strong> - Przejdź do sekcji "Wyniki".</li>
-    <li><strong>Jak mogę się zarejestrować?</strong> - Kliknij "Zarejestruj się" na stronie głównej.</li>
-</ul>
+
+<link rel="stylesheet" href="{% static 'css/faq.css' %}">
+
+<div class="faq-section">
+    <h2 class="faq-heading">Najczęściej Zadawane Pytania</h2>
+    <div class="faq-cards">
+        <div class="faq-card">
+            <span class="faq-question">❓ Jak mogę oddać głos?</span>
+            <span class="faq-answer">Kliknij na "Karta do głosowania" po zalogowaniu.</span>
+        </div>
+        <div class="faq-card">
+            <span class="faq-question">📊 Jak sprawdzić wyniki?</span>
+            <span class="faq-answer">Przejdź do sekcji "Wyniki".</span>
+        </div>
+        <div class="faq-card">
+            <span class="faq-question">📝 Jak mogę się zarejestrować?</span>
+            <span class="faq-answer">Kliknij "Zarejestruj się" na stronie głównej.</span>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

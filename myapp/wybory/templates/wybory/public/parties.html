@@ -1,15 +1,22 @@
 {% extends 'wybory/base.html' %}
+{% load static %}
 
 {% block title %}Partie{% endblock %}
 
 {% block content %}
-<h2>Lista Partii</h2>
-<ul>
-    {% for party in parties %}
-        <li>
-            <strong>{{ party.name }}</strong>
-            <p>{{ party.description }}</p>
-        </li>
-    {% endfor %}
-</ul>
+
+<link rel="stylesheet" href="{% static 'css/parties.css' %}">
+
+<div class="party-container">
+    <h2 class="party-title">Lista Partii</h2>
+    <ul class="party-list">
+        {% for party in parties %}
+            <li class="party-item">
+                <strong class="party-name">{{ party.name }}</strong>
+                <p class="party-description">{{ party.description }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
 {% endblock %}

@@ -1,20 +1,52 @@
 {% extends 'wybory/base.html' %}
+{% load static %}
 
 {% block title %}Karta do Głosowania{% endblock %}
 
 {% block content %}
-<h2>Karta do Głosowania</h2>
 
-<ul>
-    {% for election in elections %}
-        <li>
-            <strong>{{ election.title }}</strong> ({{ election.date|date:"d M Y" }})
-            {% if election.id in voted_elections %}
-                <span style="color: green;">Głos oddany</span>
-            {% else %}
-                <a href="{% url 'cast_vote' election.id %}">Oddaj głos</a>
-            {% endif %}
-        </li>
-    {% endfor %}
-</ul>
+<link rel="stylesheet" href="{% static 'css/ballot.css' %}">
+
+<div class="panel-container">
+    <h2 class="panel-title">Karta do Głosowania</h2>
+
+    <h3 class="vote-section-title">Głosowanie na prezydenta</h3>
+    <ul class="vote-list">
+        {% for election in presidential_elections %}
+            <li class="vote-item">
+                <div class="vote-info">
+                    <strong>{{ election.title }}</strong><br>
+                    <span class="vote-date">{{ election.date|date:"d M Y" }}</span>
+                </div>
+                <div class="vote-action">
+                    {% if election.id in voted_elections %}
+                        <span class="vote-status voted">Głos oddany</span>
+                    {% else %}
+                        <a href="{% url 'cast_vote' election.id %}" class="vote-link">Oddaj głos na kandydata</a>
+                    {% endif %}
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h3 class="vote-section-title">Głosowanie na partie</h3>
+    <ul class="vote-list">
+        {% for election in parliamentary_elections %}
+            <li class="vote-item">
+                <div class="vote-info">
+                    <strong>{{ election.title }}</strong><br>
+                    <span class="vote-date">{{ election.date|date:"d M Y" }}</span>
+                </div>
+                <div class="vote-action">
+                    {% if election.id in party_voted_elections %}
+                        <span class="vote-status voted">Głos oddany na partię</span>
+                    {% else %}
+                        <a href="{% url 'cast_party_vote' election.id %}" class="vote-link">Oddaj głos na partię</a>
+                    {% endif %}
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
 {% endblock %}

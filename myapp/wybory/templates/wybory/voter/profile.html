@@ -1,34 +1,51 @@
 {% extends 'wybory/base.html' %}
+{% load static %}
 
 {% block title %}Profil Użytkownika{% endblock %}
 
 {% block content %}
-<h2>Profil Użytkownika</h2>
-<p><strong>Email:</strong> {{ user.email }}</p>
 
-{% if voter and voter.verification_status != 'approved' %}
-    <li><a href="{% url 'verify_identity' %}">Zweryfikuj tożsamość</a></li>
-{% endif %}
-{% if voter %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<div class="panel-container">
 
-    <p><strong>Status weryfikacji:</strong> 
-        {% if voter.verification_status == 'approved' %}
-            <span style="color: green;">Zatwierdzone</span>
-        {% elif voter.verification_status == 'pending' %}
-            <span style="color: orange;">Oczekujące</span>
-        {% elif voter.verification_status == 'rejected' %}
-            <span style="color: red;">Odrzucone</span>
-        {% endif %}
-    </p>
-    
-    <h3>Edytuj swoje dane</h3>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn">Zapisz zmiany</button>
-    </form>
-    
-{% else %}
-    <p>Nie znaleziono danych wyborcy.</p>
-{% endif %}
+    <h2 class="panel-title">Profil Użytkownika</h2>
+
+    <div class="profile-section">
+        <p><strong>Email:</strong> {{ user.email }}</p>
+    </div>
+
+    {% if voter and voter.verification_status != 'approved' %}
+        <div class="profile-section">
+            <a href="{% url 'verify_identity' %}" class="verify-link">Zweryfikuj tożsamość</a>
+        </div>
+    {% endif %}
+
+    {% if voter %}
+        <div class="profile-section">
+            <p><strong>Status weryfikacji:</strong> 
+                {% if voter.verification_status == 'approved' %}
+                    <span class="verification approved">Zatwierdzone</span>
+                {% elif voter.verification_status == 'pending' %}
+                    <span class="verification pending">Oczekujące</span>
+                {% elif voter.verification_status == 'rejected' %}
+                    <span class="verification rejected">Odrzucone</span>
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="profile-section">
+            <h3 class="form-title">Edytuj swoje dane</h3>
+            <form method="post" class="profile-form">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn">Zapisz zmiany</button>
+            </form>
+        </div>
+
+    {% else %}
+        <p class="panel-description">Nie znaleziono danych wyborcy.</p>
+    {% endif %}
+</div>
+
+
 {% endblock %}

@@ -1,13 +1,36 @@
 {% extends 'wybory/base.html' %}
 
+{% load static %}
+
 {% block title %}Rejestracja - E-Wybory{% endblock %}
 
 {% block content %}
-<h2>Zarejestruj się</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Zarejestruj się</button>
-</form>
-<p>Masz już konto? <a href="{% url 'login' %}">Zaloguj się</a></p>
-{% endblock %}
+<link rel="stylesheet" href="{% static 'css/signup.css' %}">
+
+<div class="signup-page">
+    <div class="signup-wrapper">
+        <h2 class="signup-title">Zarejestruj się</h2>
+
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <form method="post" class="signup-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <div class="g-recaptcha" data-sitekey="6LdREUkrAAAAAIH7f9CHeK7mGHdXAHYBP98iRfsa"></div>
+            <button type="submit" class="signup-button">Zarejestruj się</button>
+        </form>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+      
+        <p class="signup-register-text">
+            Masz już konto?
+            <a href="{% url 'login' %}" class="signup-link">Zaloguj się</a>
+        </p>
+    </div>
+</div>
+
+  {% endblock %}

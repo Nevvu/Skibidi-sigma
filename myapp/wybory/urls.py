@@ -1,6 +1,9 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
+from .views import activate_account
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.home, name='home'), 
@@ -24,4 +27,8 @@ urlpatterns = [
     path('cast_vote/<int:election_id>/', views.cast_vote, name='cast_vote'),
     path('election/<int:election_id>/summary_pdf/', views.generate_election_summary_pdf, name='election_summary_pdf'),
     path('voter/notifications/', views.notifications, name='notifications'),
-]
+    path('activate/<uidb64>/<token>/', activate_account, name='activate'),
+    path('activate/<str:token>/', activate_account, name='activate'),
+    path('cast_party_vote/<int:election_id>/', views.cast_party_vote, name='cast_party_vote'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

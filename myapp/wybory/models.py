@@ -1,7 +1,9 @@
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from PIL import Image
 from django.contrib.auth.models import User
+
 
 
 class Notification(models.Model):
@@ -35,22 +37,38 @@ class Election(models.Model):
 
 
 class Party(models.Model):
-    name = models.CharField(max_length=100, unique=True)  
-    description = models.TextField(null=True, blank=True) 
-    founded_date = models.DateField(null=True, blank=True) 
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(null=True, blank=True)
+    founded_date = models.DateField(null=True, blank=True)
+    election = models.ForeignKey('Election', related_name='parties', on_delete=models.CASCADE, null=True, blank=True)
+    image = models.ImageField(upload_to='party_images/', null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.image:
+            img = Image.open(self.image.path)
+            img = img.resize((300, 400), Image.Resampling.LANCZOS)  
+            img.save(self.image.path)
 
     def __str__(self):
         return self.name
+
 
 class Candidate(models.Model):
     name = models.CharField(max_length=100)
-    election = models.ForeignKey(Election, related_name='candidates', on_delete=models.CASCADE)
-    party = models.ForeignKey(Party, null=True, blank=True, on_delete=models.SET_NULL)  
+    election = models.ForeignKey('Election', related_name='candidates', on_delete=models.CASCADE)
+    party = models.ForeignKey(Party, null=True, blank=True, on_delete=models.SET_NULL)
+    image = models.ImageField(upload_to='candidate_images/', null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.image:
+            img = Image.open(self.image.path)
+            img = img.resize((300, 400), Image.Resampling.LANCZOS) 
+            img.save(self.image.path)
 
     def __str__(self):
         return self.name
-
-
 
 
 class Voter(models.Model):
@@ -62,6 +80,7 @@ class Voter(models.Model):
     eligible = models.BooleanField(default=False)
     address = models.CharField(max_length=255, blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
+    birth_date = models.DateField(null=True, blank=True)  
     verification_status = models.CharField(
         max_length=20,
         choices=[('pending', 'Oczekujące'), ('approved', 'Zatwierdzone'), ('rejected', 'Odrzucone')],
@@ -72,10 +91,17 @@ class Voter(models.Model):
         return f"{self.name} {self.last_name}"
 
 class Vote(models.Model):
-    voter = models.ForeignKey(Voter, on_delete = models.CASCADE)
     candidate = models.ForeignKey(Candidate, on_delete = models.CASCADE)
     election = models.ForeignKey(Election, on_delete = models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add = True)    
+
+class PartyVote(models.Model):
+    party = models.ForeignKey(Party, on_delete=models.CASCADE, related_name='votes')
+    election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='party_votes')
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Głos na {self.party.name} w wyborach {self.election.title}"
 
 @receiver(post_save, sender=User)
 def create_voter(sender, instance, created, **kwargs):
@@ -92,3 +118,12 @@ class ElectionResult(models.Model):
     election = models.ForeignKey(Election, on_delete=models.CASCADE)
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
     votes_count = models.PositiveIntegerField(default=0)
+
+
+class VotersLog(models.Model):
+    voter = models.ForeignKey(Voter, on_delete=models.CASCADE)
+    election = models.ForeignKey(Election, on_delete=models.CASCADE)
+    voted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('voter', 'election')

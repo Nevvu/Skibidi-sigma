@@ -1,25 +1,31 @@
 {% extends 'wybory/base.html' %}
+{% load static %}
 
 {% block title %}Powiadomienia{% endblock %}
 
 {% block content %}
+
+<link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+
 <h2>Twoje Powiadomienia</h2>
 
-<ul>
+<ul class="notification-list">
     {% for notification in notifications %}
-        <li>
-            <strong>{{ notification.title }}</strong><br>
-            {{ notification.message }}<br>
-            <small>Dodano: {{ notification.created_at|date:"d M Y H:i" }}</small>
+        <li class="notification-item {% if not notification.is_read %}unread{% endif %}">
+            <strong class="notification-title">{{ notification.title }}</strong><br>
+            <p class="notification-message">{{ notification.message }}</p>
+            <small class="notification-date">Dodano: {{ notification.created_at|date:"d M Y H:i" }}</small><br>
+
             {% if not notification.is_read %}
-                <span style="color: red;">(Nieprzeczytane)</span>
+                <span class="notification-status unread-label">(Nieprzeczytane)</span>
                 <button class="mark-as-read" data-id="{{ notification.id }}">Oznacz jako przeczytane</button>
             {% else %}
-                <span style="color: green;">(Przeczytane)</span>
+                <span class="notification-status read-label">(Przeczytane)</span>
             {% endif %}
         </li>
     {% endfor %}
 </ul>
+
 {% csrf_token %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -45,4 +51,5 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+
 {% endblock %}

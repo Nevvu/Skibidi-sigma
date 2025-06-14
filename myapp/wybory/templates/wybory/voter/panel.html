@@ -1,22 +1,33 @@
 {% extends 'wybory/base.html' %}
 
+{% load static %}
+
 {% block title %}Panel Wyborcy{% endblock %}
 
 {% block content %}
-<h2>Witaj, {{ user.username }}</h2>
 
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <li class="alert {{ message.tags }}">{{ message }}</li>
-        {% endfor %}
+<link rel="stylesheet" href="{% static 'css/panel.css' %}">
+
+<div class="panel-container">
+
+    <h2 class="panel-title">Witaj, {{ user.username }}</h2>
+
+    {% if messages %}
+        <ul class="messages-list">
+            {% for message in messages %}
+                <li class="alert {{ message.tags }} message-item">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <p class="panel-description">Tu znajdziesz swoje aktywne wybory i historię głosowania.</p>
+
+    <ul class="panel-links">
+        <li class="panel-link-item"><a href="{% url 'ballot' %}" class="panel-link">Karta do głosowania</a></li>
+        <li class="panel-link-item"><a href="{% url 'activity_history' %}" class="panel-link">Historia aktywności</a></li>
+        <li class="panel-link-item"><a href="{% url 'profile' %}" class="panel-link">Profil użytkownika</a></li>
     </ul>
-{% endif %}
 
-<p>Tu znajdziesz swoje aktywne wybory i historię głosowania.</p>
-<ul>
-    <li><a href="{% url 'ballot' %}">Karta do głosowania</a></li>
-    <li><a href="{% url 'activity_history' %}">Historia aktywności</a></li>
-    <li><a href="{% url 'profile' %}">Profil użytkownika</a></li>
-</ul>
+</div>
+
 {% endblock %}

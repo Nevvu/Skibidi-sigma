@@ -1,27 +1,39 @@
 {% extends 'wybory/base.html' %}
 
+{% load static %}
+
 {% block title %}Wyniki Wyborów{% endblock %}
 
 {% block content %}
-<h2>Wyniki Wyborów</h2>
 
-{% if results %}
-    <ul>
-        {% for result in results %}
-            <li>
-                <strong>{{ result.election.title }}</strong> ({{ result.election.date|date:"d M Y" }})<br>
-                <strong>Zwycięzca:</strong> {{ result.winner }}<br>
-                <strong>Wyniki:</strong>
-                <ul>
-                    {% for vote in result.votes %}
-                        <li>{{ vote.candidate__name }}: {{ vote.vote_count }} głosów</li>
-                    {% endfor %}
-                </ul>
-                <a href="{% url 'election_summary_pdf' result.election.id %}" target="_blank">Pobierz PDF z wynikami</a>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>Brak zakończonych wyborów.</p>
-{% endif %}
+<link rel="stylesheet" href="{% static 'css/results.css' %}">
+
+<div class="results-container">
+    <h2 class="results-title">Wyniki Wyborów</h2>
+
+    {% if results %}
+        <ul class="results-list">
+            {% for result in results %}
+                <li class="result-item">
+                    <div class="election-info">
+                        <strong class="election-title">{{ result.election.title }}</strong>
+                        <span class="election-date">({{ result.election.date|date:"d M Y" }})</span>
+                    </div>
+                    <div class="vote-details">
+                        <strong>Wyniki:</strong>
+                        <ul class="vote-list">
+                            {% for vote in result.votes %}
+                                <li class="vote-item">{{ vote.candidate__name }}: {{ vote.vote_count }} głosów</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <a href="{% url 'election_summary_pdf' result.election.id %}" target="_blank" class="pdf-button">📄 Pobierz PDF z wynikami</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="no-results">Brak zakończonych wyborów. Wyniki będą dostępne po zakończeniu głosowania.</p>
+    {% endif %}
+</div>
+
 {% endblock %}

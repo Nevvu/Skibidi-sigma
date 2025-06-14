@@ -1,30 +1,69 @@
 {% extends 'wybory/base.html' %}
 
+{% load static %}
+
 {% block title %}Lista Kandydatów{% endblock %}
 
 {% block content %}
-<h2>Wyszukaj kandydatów</h2>
+<link rel="stylesheet" href="{% static 'css/candidate-list.css' %}">
+<div class="candidate-page">
+    <h2>Wyszukaj kandydatów</h2>
 
-<form method="get" action="{% url 'candidate_search' %}">
-    <label for="election">Wybierz wybory:</label>
-    <select name="election_id" id="election" onchange="this.form.submit()">
-        <option value="">-- Wybierz wybory --</option>
-        {% for election in elections %}
-            <option value="{{ election.id }}" {% if election.id|stringformat:"s" == selected_election_id %}selected{% endif %}>
-                {{ election.title }}
-            </option>
-        {% endfor %}
-    </select>
-</form>
+    <form method="get" action="{% url 'candidate_search' %}" class="candidate-form">
+        <label for="election">Wybierz wybory:</label>
+        <select name="election_id" id="election" onchange="this.form.submit()">
+            <option value="">-- Wybierz wybory --</option>
+            {% for election in elections %}
+                <option value="{{ election.id }}" {% if election.id|stringformat:"s" == selected_election_id %}selected{% endif %}>
+                    {{ election.title }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
 
-{% if candidates %}
-    <h3>Kandydaci w wybranych wyborach:</h3>
-    <select>
-        {% for candidate in candidates %}
-            <option value="{{ candidate.id }}">{{ candidate.name }}</option>
+    {% if candidates %}
+        <h3>Kandydaci w wybranych wyborach:</h3>
+        <ul class="candidate-list">
+            {% for candidate in candidates %}
+                <li>
+                    <div class="candidate-text">
+                        <span class="candidate-name">{{ candidate.name }}</span>
+                        <p class="candidate-party">
+                            {% if candidate.party %}
+                                Partia: {{ candidate.party.name }}
+                            {% else %}
+                                Bezpartyjny
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% if candidate.image %}
+                        <img src="{{ candidate.image.url }}" alt="Zdjęcie kandydata" class="candidate-image">
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% elif selected_election_id and candidates is not None %}
+        {% if election_type == "Prezydenckie" or election_type == "InnyTypZKandydatami" %}
+            <p>Brak kandydatów dla wybranych wyborów.</p>
+        {% endif %}
+    {% endif %}
+    
+    {% if parties %}
+    <h3>Partie biorące udział w tych wyborach:</h3>
+    <ul class="party-list">
+        {% for party in parties %}
+            <li>
+                <div class="party-text">
+                    <span class="party-name">{{ party.name }}</span>
+                </div>
+                {% if party.image %}
+                    <img src="{{ party.image.url }}" alt="Logo partii" class="party-image">
+                {% endif %}
+            </li>
         {% endfor %}
-    </select>
-{% elif selected_election_id %}
-    <p>Brak kandydatów dla wybranych wyborów.</p>
-{% endif %}
+    </ul>
+    {% elif selected_election_id and election_type == "Parlamentarne" %}
+        <p>Brak partii dla wybranych wyborów.</p>
+    {% endif %}
+</div>
 {% endblock %}
