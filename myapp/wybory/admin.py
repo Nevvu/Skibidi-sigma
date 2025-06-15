@@ -38,15 +38,19 @@ def approve_verification(self, request, queryset):
 
 approve_verification.short_description = 'Zatwierdź wybranych użytkowników'
 
+
 class ElectionAdmin(admin.ModelAdmin):
+    list_display = ('title', 'date', 'end_time', 'generate_pdf_link')
 
-    list_display = ('title', 'date', 'end_time', 'generate_pdf')
-
-    def generate_pdf(self, obj):
+    def generate_pdf_link(self, obj):
+        election_type = obj.election_type.name.lower()
         url = reverse('election_summary_pdf', args=[obj.id])
-        return format_html('<a href="{}" target="_blank">Generuj PDF</a>', url)
-    generate_pdf.short_description = 'Podsumowanie PDF'
-
+        if election_type == 'prezydenckie':
+            return format_html('<a href="{}" target="_blank">Prezydenckie PDF</a>', url)
+        elif election_type == 'parlamentarne':
+            return format_html('<a href="{}" target="_blank">Parlamentarne PDF</a>', url)
+        return '-'
+    generate_pdf_link.short_description = 'Podsumowanie PDF'
 
 class VoterAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'pesel_num', 'eligible', 'verification_status')
@@ -123,6 +127,7 @@ admin.site.register(Vote, VoteAdmin)
 admin.site.register(Voter, VoterAdmin)
 admin.site.register(VotingCriteria)
 admin.site.register(ElectionType)
+admin.site.register(PartyVote)
 
 
 

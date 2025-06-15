@@ -47,7 +47,7 @@ def my_view(request):
 
 
 def index(request):
-    # logger.info("Strona główna została odwiedzona")
+    logger.info("Strona główna została odwiedzona")
     return render(request, 'signup.html')
 
 
@@ -197,11 +197,6 @@ def election_detail(request, election_id):
     return render(request, 'wybory/voter/election_detail.html', {'election': election, 'candidates': candidates})
 
 
-from django.utils.timezone import now
-from django.contrib import messages
-from django.shortcuts import redirect, render
-
-from django.utils.timezone import now, localtime
 
 @login_required
 def cast_vote(request, election_id):
@@ -244,7 +239,7 @@ def cast_vote(request, election_id):
     return render(request, 'wybory/voter/cast_vote.html', {
         'election': election,
         'form': form,
-        'is_voting_available': is_voting_available,  # Przekazanie informacji do szablonu
+        'is_voting_available': is_voting_available,  
     })
 
 
@@ -266,21 +261,19 @@ def ballot(request):
         election_type__name='Parlamentarne',
         end_time__gt=current_time
     )
-    # voted_elections i party_voted_elections jak dotychczas
     return render(request, 'wybory/voter/ballot.html', {
         'presidential_elections': presidential_elections,
         'parliamentary_elections': parliamentary_elections,
-        # ...pozostałe zmienne...
     })
+
 
 @login_required
 def activity_history(request):
-    voted_elections_ids = [
-        int(key.split('_')[1]) for key in request.session.keys() if key.startswith('voted_') and request.session[key]
-    ]
-    voted_elections = Election.objects.filter(id__in=voted_elections_ids)
+    voter = Voter.objects.get(user=request.user)
+    logs = VotersLog.objects.filter(voter=voter).select_related('election').order_by('-voted_at')
+    voted_elections = [log.election for log in logs]
 
-    return render(request, 'wybory/voter/activity_history.html', {'voted_elections': voted_elections})
+    return render(request, 'wybory/voter/activity_history.html', {'voted_elections': voted_elections, 'logs': logs})
 
 
 @login_required
@@ -317,66 +310,6 @@ def verify_identity(request):
     return render(request, 'wybory/voter/verify_identity.html', {'form': form})
 
 
-def generate_election_summary_pdf(request, election_id):
-    election = Election.objects.get(id=election_id)
-    candidates = Candidate.objects.filter(election=election)
-    votes = Vote.objects.filter(election=election)
-
-    candidate_support = []
-    total_votes = votes.count()
-    candidate_names = []
-    candidate_votes_list = []
-
-    for candidate in candidates:
-        candidate_votes = votes.filter(candidate=candidate).count()
-        support_percentage = (candidate_votes / total_votes * 100) if total_votes > 0 else 0
-        candidate_support.append({
-            'name': candidate.name,
-            'party': candidate.party.name if candidate.party else "Bezpartyjny",
-            'votes': candidate_votes,
-            'support_percentage': round(support_percentage, 2),
-        })
-        candidate_names.append(candidate.name)
-        candidate_votes_list.append(candidate_votes)
-
-    # Generowanie wykresu
-    plt.figure(figsize=(6, 6))
-    plt.pie(candidate_votes_list, labels=candidate_names, autopct='%1.1f%%', startangle=140)
-    plt.title(f"Wyniki wyborów: {election.title}")
-
-    # Zapisanie wykresu do pamięci jako obraz
-    buffer = io.BytesIO()
-    plt.savefig(buffer, format='png')
-    buffer.seek(0)
-    image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
-    buffer.close()
-    plt.close()
-
-    # Kontekst dla szablonu
-    context = {
-        'election': election,
-        'candidates': candidate_support,
-        'start_time': election.date,
-        'end_time': election.end_time,
-        'total_candidates': candidates.count(),
-        'total_votes': total_votes,
-        'chart': image_base64,  # Wykres w formacie base64
-    }
-
-    # Renderowanie szablonu HTML
-    html_string = render_to_string('wybory/pdf/election_summary.html', context)
-    html = HTML(string=html_string, base_url=request.build_absolute_uri())
-
-    # Generowanie pliku PDF
-    pdf_file = html.write_pdf()
-
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="podsumowanie_wyborow_{election_id}.pdf"'
-    return response
-
-
-
-
 @login_required
 def notifications(request):
     if request.method == 'POST':
@@ -393,7 +326,7 @@ def notifications(request):
     user_notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'wybory/voter/notifications.html', {'notifications': user_notifications})
 
-from django.contrib.auth.decorators import user_passes_test
+
 
 
 def home(request):
@@ -404,7 +337,6 @@ def home(request):
         'presidential_elections': presidential_elections,
         'parliamentary_elections': parliamentary_elections,
     })
-
 
 @login_required
 def cast_party_vote(request, election_id):
@@ -427,7 +359,7 @@ def cast_party_vote(request, election_id):
         messages.error(request, f"Głosowanie na partie jest niedostępne. Możesz głosować tylko między {start_time} a {end_time}.")
         return redirect('voter_panel')
 
-    if request.session.get(f'party_voted_{election_id}', False):
+    if VotersLog.objects.filter(voter=voter, election=election).exists():
         messages.error(request, "Już oddałeś głos na partię w tych wyborach.")
         return redirect('voter_panel')
 
@@ -436,6 +368,7 @@ def cast_party_vote(request, election_id):
         if form.is_valid():
             party = form.cleaned_data['party']
             PartyVote.objects.create(party=party, election=election)
+            VotersLog.objects.create(voter=voter, election=election)
             request.session[f'party_voted_{election_id}'] = True
             messages.success(request, "Twój głos na partię został oddany pomyślnie.")
             return redirect('ballot')
@@ -447,3 +380,95 @@ def cast_party_vote(request, election_id):
         'form': form,
         'is_voting_available': is_voting_available,
     })
+
+
+
+
+def generate_election_summary_pdf(request, election_id):
+    election = Election.objects.get(id=election_id)
+    election_type = election.election_type.name.lower()
+
+    if election_type == 'prezydenckie':
+        candidates = Candidate.objects.filter(election=election)
+        votes = Vote.objects.filter(election=election)
+
+        candidate_support = []
+        total_votes = votes.count()
+        candidate_names = []
+        candidate_votes_list = []
+
+        for candidate in candidates:
+            candidate_votes = votes.filter(candidate=candidate).count()
+            support_percentage = (candidate_votes / total_votes * 100) if total_votes > 0 else 0
+            candidate_support.append({
+                'name': candidate.name,
+                'party': candidate.party.name if candidate.party else "Bezpartyjny",
+                'votes': candidate_votes,
+                'support_percentage': round(support_percentage, 2),
+            })
+            candidate_names.append(candidate.name)
+            candidate_votes_list.append(candidate_votes)
+
+        context = {
+            'election': election,
+            'candidates': candidate_support,
+            'start_time': election.date,
+            'end_time': election.end_time,
+            'total_candidates': candidates.count(),
+            'total_votes': total_votes,
+            'chart': generate_chart_base64(candidate_names, candidate_votes_list, f"Wyniki wyborów: {election.title}"),
+        }
+        html_string = render_to_string('wybory/pdf/election_summary.html', context)
+
+    elif election_type == 'parlamentarne':
+        parties = Party.objects.filter(election=election)
+        votes = PartyVote.objects.filter(election=election)
+
+        party_support = []
+        total_votes = votes.count()
+        party_names = []
+        party_votes_list = []
+
+        for party in parties:
+            party_votes = votes.filter(party=party).count()
+            support_percentage = (party_votes / total_votes * 100) if total_votes > 0 else 0
+            party_support.append({
+                'name': party.name,
+                'votes': party_votes,
+                'support_percentage': round(support_percentage, 2),
+            })
+            party_names.append(party.name)
+            party_votes_list.append(party_votes)
+
+        context = {
+            'election': election,
+            'parties': party_support,
+            'start_time': election.date,
+            'end_time': election.end_time,
+            'total_parties': parties.count(),
+            'total_votes': total_votes,
+            'chart': generate_chart_base64(party_names, party_votes_list, f"Wyniki wyborów parlamentarnych: {election.title}"),
+        }
+        html_string = render_to_string('wybory/pdf/party_election_summary.html', context)
+
+    else:
+        return HttpResponse("Nieobsługiwany typ wyborów.", status=400)
+
+    html = HTML(string=html_string, base_url=request.build_absolute_uri())
+    pdf_file = html.write_pdf()
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="podsumowanie_wyborow_{election_id}.pdf"'
+    return response
+
+def generate_chart_base64(labels, values, title):
+    plt.figure(figsize=(6, 6))
+    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=140)
+    plt.title(title)
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+    buffer.close()
+    plt.close()
+    return image_base64
+
