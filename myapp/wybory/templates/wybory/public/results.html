@@ -22,10 +22,20 @@
                     <div class="vote-details">
                         <strong>Wyniki:</strong>
                         <ul class="vote-list">
+                        {% if result.type == 'parlamentarne' %}
+                            {% for vote in result.votes %}
+                                <li class="vote-item">{{ vote.party__name }}: {{ vote.vote_count }} głosów</li>
+                            {% empty %}
+                                <li>Brak głosów</li>
+                            {% endfor %}
+                        {% else %}
                             {% for vote in result.votes %}
                                 <li class="vote-item">{{ vote.candidate__name }}: {{ vote.vote_count }} głosów</li>
-                            {% endfor %}
-                        </ul>
+                        {% empty %}
+                            <li>Brak głosów</li>
+                        {% endfor %}
+                        {% endif %}
+                    </ul>
                     </div>
                     <a href="{% url 'election_summary_pdf' result.election.id %}" target="_blank" class="pdf-button">📄 Pobierz PDF z wynikami</a>
                 </li>

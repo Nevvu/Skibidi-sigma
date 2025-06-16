@@ -38,6 +38,10 @@ import base64
 from .models import Voter
 from .forms import PartyVoteForm
 import logging
+from django.db.models import Count
+from django.utils.timezone import localtime, now
+from .models import Election, Vote, PartyVote
+
 
 logger = logging.getLogger('myapp')
 
@@ -170,7 +174,7 @@ def candidate_search(request):
     })
 
 
-from django.utils.timezone import localtime, now
+
 
 def election_results(request):
     current_time = localtime(now()) 
@@ -178,12 +182,30 @@ def election_results(request):
 
     results = []
     for election in completed_elections:
-        votes = Vote.objects.filter(election=election).values('candidate__name').annotate(vote_count=Count('id')).order_by('-vote_count')
-        winner = votes.first() if votes else None
+        if election.election_type.name.lower() == 'parlamentarne':
+            votes = (
+                PartyVote.objects.filter(election=election)
+                .values('party__name')
+                .annotate(vote_count=Count('id'))
+                .order_by('-vote_count')
+            )
+            winner = votes.first() if votes else None
+            winner_name = winner['party__name'] if winner else "Brak głosów"
+        else:
+            votes = (
+                Vote.objects.filter(election=election)
+                .values('candidate__name')
+                .annotate(vote_count=Count('id'))
+                .order_by('-vote_count')
+            )
+            winner = votes.first() if votes else None
+            winner_name = winner['candidate__name'] if winner else "Brak głosów"
+
         results.append({
             'election': election,
-            'winner': winner['candidate__name'] if winner else "Brak głosów",
+            'winner': winner_name,
             'votes': votes,
+            'type': election.election_type.name.lower(),
         })
 
     return render(request, 'wybory/public/results.html', {'results': results})
