@@ -45,6 +45,8 @@ from .models import Election, Vote, PartyVote
 
 logger = logging.getLogger('myapp')
 
+logging.disable(logging.CRITICAL)
+
 def my_view(request):
     logger.info("To jest log informacyjny")
     logger.error("Coś poszło nie tak!")
@@ -55,6 +57,11 @@ def index(request):
     return render(request, 'signup.html')
 
 
+"""
+Obsługuje proces rejestracji nowego użytkownika.
+Waliduje dane z formularza, tworzy konto użytkownika oraz powiązany profil wyborcy.
+Po pomyślnej rejestracji przekierowuje użytkownika do strony logowania lub panelu wyborcy.
+"""
 
 def signup(request):
     if request.method == 'POST':
@@ -92,6 +99,12 @@ def signup(request):
         form = SignUpForm()
     return render(request, 'wybory/public/signup.html', {'form': form})
 
+"""
+Aktywuje konto użytkownika na podstawie przesłanego linku aktywacyjnego.
+Sprawdza poprawność tokena i identyfikatora użytkownika.
+Po aktywacji umożliwia logowanie do serwisu.
+"""
+
 def activate_account(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -103,7 +116,6 @@ def activate_account(request, uidb64, token):
         user.is_active = True
         user.save()
 
-        # Dodajemy Voter tylko jeśli nie istnieje
         if not hasattr(user, 'voter'):
             Voter.objects.create(user=user, name=user.username, email=user.email)
 
@@ -113,6 +125,13 @@ def activate_account(request, uidb64, token):
     else:
         return HttpResponse('Link aktywacyjny jest nieprawidłowy lub wygasł.')
     
+
+"""
+Obsługuje proces logowania użytkownika.
+Waliduje dane z formularza logowania i uwierzytelnia użytkownika.
+Po poprawnym logowaniu przekierowuje do panelu wyborcy lub strony głównej.
+"""
+
 def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -128,15 +147,13 @@ def login_view(request):
             messages.error(request, 'Nieprawidłowy login lub hasło.')
     return render(request, 'wybory/public/login.html')
 
-
-
 def faq(request): return render(request, 'wybory/public/faq.html')
 def contact(request): return render(request, 'wybory/public/contact.html')
-
 
 def election_list(request):
     elections = Election.objects.all()
     return render(request, 'wybory/public/election_list.html', {'elections': elections})
+
 
 def election_calendar(request):
     elections = Election.objects.filter(date__gte=datetime.date.today()).order_by('date')
@@ -145,6 +162,11 @@ def election_calendar(request):
 def parties(request):
     parties = Party.objects.all()
     return render(request, 'wybory/public/parties.html', {'parties': parties})
+
+"""
+Wyświetla listę kandydatów startujących w wybranych wyborach.
+Pobiera kandydatów powiązanych z danym election_id i przekazuje je do szablonu.
+"""
 
 def candidate_list(request, election_id):
     elections = Election.objects.all()
@@ -157,6 +179,11 @@ def candidate_list(request, election_id):
         'candidates': candidates,
         'parties': parties,
     })
+
+"""
+Umożliwia wyszukiwanie kandydatów na podstawie podanych kryteriów (np. imię, nazwisko, partia).
+Zwraca listę kandydatów spełniających warunki wyszukiwania.
+"""
 
 def candidate_search(request):
     elections = Election.objects.all()
@@ -174,7 +201,10 @@ def candidate_search(request):
     })
 
 
-
+"""
+Wyświetla wyniki zakończonych wyborów (prezydenckich i parlamentarnych).
+Dla każdego typu wyborów prezentuje zwycięzcę oraz szczegółowe wyniki głosowania.
+"""
 
 def election_results(request):
     current_time = localtime(now()) 
@@ -219,6 +249,11 @@ def election_detail(request, election_id):
     return render(request, 'wybory/voter/election_detail.html', {'election': election, 'candidates': candidates})
 
 
+"""
+Pozwala uprawnionemu użytkownikowi oddać głos na wybranego kandydata w określonych wyborach.
+Sprawdza uprawnienia, czas głosowania oraz czy użytkownik już głosował w tych wyborach.
+Po oddaniu głosu zapisuje informację w Vote oraz VotersLog.
+"""
 
 @login_required
 def cast_vote(request, election_id):
@@ -269,9 +304,10 @@ def cast_vote(request, election_id):
 @login_required
 def voter_panel(request): return render(request, 'wybory/voter/panel.html')
 
-
-
-from django.utils.timezone import localtime, now
+"""
+Wyświetla kartę do głosowania dla zalogowanego użytkownika.
+Prezentuje dostępne wybory, w których użytkownik może wziąć udział, oraz informuje o już oddanych głosach.
+"""
 
 def ballot(request):
     current_time = localtime(now())
@@ -289,6 +325,11 @@ def ballot(request):
     })
 
 
+"""
+Wyświetla listę wyborów, w których zalogowany użytkownik oddał głos.
+Dane pobierane są z modelu VotersLog.
+"""
+
 @login_required
 def activity_history(request):
     voter = Voter.objects.get(user=request.user)
@@ -297,6 +338,11 @@ def activity_history(request):
 
     return render(request, 'wybory/voter/activity_history.html', {'voted_elections': voted_elections, 'logs': logs})
 
+
+"""
+Wyświetla i umożliwia edycję profilu zalogowanego użytkownika.
+Pozwala na przeglądanie oraz aktualizację danych osobowych i kontaktowych wyborcy.
+"""
 
 @login_required
 def profile(request):
@@ -310,6 +356,12 @@ def profile(request):
         return redirect('profile')  
 
     return render(request, 'wybory/voter/profile.html', {'user': request.user, 'voter': voter, 'form': form})
+
+
+"""
+Wyświetla i umożliwia edycję profilu zalogowanego użytkownika.
+Pozwala na przeglądanie oraz aktualizację danych osobowych i kontaktowych wyborcy.
+"""
 
 @login_required
 def verify_identity(request):
@@ -331,6 +383,10 @@ def verify_identity(request):
 
     return render(request, 'wybory/voter/verify_identity.html', {'form': form})
 
+"""
+Wyświetla powiadomienia dla zalogowanego użytkownika.
+Informuje o ważnych zdarzeniach, takich jak status weryfikacji, nowe wybory czy potwierdzenie oddania głosu.
+"""
 
 @login_required
 def notifications(request):
@@ -360,6 +416,12 @@ def home(request):
         'parliamentary_elections': parliamentary_elections,
     })
 
+
+"""
+Pozwala uprawnionemu użytkownikowi oddać głos na wybraną partię w określonych wyborach parlamentarnych.
+Sprawdza uprawnienia, czas głosowania oraz czy użytkownik już głosował.
+Po oddaniu głosu zapisuje informację w PartyVote oraz VotersLog.
+"""
 @login_required
 def cast_party_vote(request, election_id):
     voter = Voter.objects.filter(user=request.user).first()
@@ -405,10 +467,18 @@ def cast_party_vote(request, election_id):
 
 
 
+"""
+Generuje plik PDF z podsumowaniem wyników wyborów.
+Automatycznie rozpoznaje typ wyborów (prezydenckie/parlamentarne) i generuje odpowiedni raport.
+Wyniki oraz wykres są renderowane na podstawie danych z bazy.
+"""
 
 def generate_election_summary_pdf(request, election_id):
+
+
     election = Election.objects.get(id=election_id)
     election_type = election.election_type.name.lower()
+
 
     if election_type == 'prezydenckie':
         candidates = Candidate.objects.filter(election=election)
@@ -481,6 +551,16 @@ def generate_election_summary_pdf(request, election_id):
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="podsumowanie_wyborow_{election_id}.pdf"'
     return response
+
+"""
+Generuje wykres kołowy na podstawie przekazanych etykiet i wartości, a następnie zwraca go w formacie base64.
+Wykorzystywane do osadzania wykresów w PDF-ach z wynikami wyborów.
+
+:param labels: Lista etykiet (np. nazw partii lub kandydatów)
+:param values: Lista wartości liczbowych (np. liczba głosów)
+:param title: Tytuł wykresu
+:return: Wykres zakodowany w base64 (string)
+"""
 
 def generate_chart_base64(labels, values, title):
     plt.figure(figsize=(6, 6))

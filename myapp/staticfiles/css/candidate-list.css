@@ -67,30 +67,31 @@
 /* Obrazek po prawej — widoczny cały czas */
 .candidate-image {
     opacity: 1;
-    width: 150px;
-    height: 300px;
-    object-fit: cover;
-    border-radius: 0 12px 12px 0;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
     margin-left: 20px;
-    flex-shrink: 0;
-    pointer-events: none;
     transform: none;
-    transition: none;
+    transition: transform 0.3s ease;
 }
-
+.candidate-image:hover,.candidate-name:hover {
+  transform: scale(1.1);
+}
 
 /* Tekst po lewej */
 .candidate-name {
     font-weight: bold;
-    font-size: 64px;
+    font-size: 2rem;
     display: block;
     color: #222;
+    transition: transform 0.3s ease;
 }
 
 .candidate-party {
-    font-size: 24px;
+    font-size: 1rem;
     color: #666;
     margin: 4px 0 0 0;
+      text-align: left;
 }
 
 /* Kontener tekstu */
@@ -124,18 +125,21 @@
 }
 
 .party-name {
-    font-weight: 600;
+    font-weight: bold;
     font-size: 64px;
-    color: #444;
+    display: block;
+    color: #222;
 }
 
 .party-image {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-left: 15px;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-left: 20px;
+    transform: none;
 }
+
+
 
 /* Nagłówki i paragrafy */
 h2, h3 {
@@ -152,7 +156,6 @@ p {
     margin: 10px auto;
 }
 
-/* Responsive – mobile adjustments */
 @media (max-width: 600px) {
     .candidate-name {
         font-size: 32px;

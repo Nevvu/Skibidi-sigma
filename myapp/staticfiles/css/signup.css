@@ -69,3 +69,15 @@
 .signup-link:hover {
     text-decoration: underline;
 }
+
+.errorlist {
+  color: #fff;
+  background: #e74c3c;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  list-style: none;
+}
+.errorlist li {
+  margin: 0;
+}

@@ -9,6 +9,12 @@ from .utils import send_notification_email
 from .forms import CustomUserCreationForm
 from .utils import create_notification
 
+"""
+Wyświetla wyniki zakończonych wyborów.
+Dla każdego zakończonego głosowania prezentuje zwycięzcę oraz szczegółowe wyniki.
+Wysyła powiadomienia lub e-maile do wszystkich wyborców o zakończeniu wyborów i zwycięzcy.
+"""
+
 def election_results(request):
     completed_elections = Election.objects.filter(end_time__lte=datetime.datetime.now())
 
@@ -59,12 +65,22 @@ class VoterAdmin(admin.ModelAdmin):
     readonly_fields = ('email',)  
     actions = ['approve_verification', 'reject_verification'] 
 
+    """
+    Zatwierdza wybranych użytkowników jako zweryfikowanych i uprawnionych do głosowania.
+    Ustawia status weryfikacji na 'approved' i pole eligible na True.
+    """
+
     def approve_verification(self, request, queryset):
         for voter in queryset:
             voter.verification_status = 'approved'
             voter.eligible = True
             voter.save()
     approve_verification.short_description = 'Zatwierdź wybranych użytkowników'
+
+    """
+    Odrzuca wybranych użytkowników jako nieuprawnionych do głosowania.
+    Ustawia status weryfikacji na 'rejected' i pole eligible na False.
+    """
 
     def reject_verification(self, request, queryset):
         for voter in queryset:
@@ -77,6 +93,12 @@ class VoteAdmin(admin.ModelAdmin):
     list_display = ('election', 'candidate', 'timestamp')  
     readonly_fields = ('election', 'candidate', 'timestamp')  
     exclude = ('voter',)  
+
+"""
+Wyświetla wyniki zakończonych wyborów.
+Dla każdego zakończonego głosowania prezentuje zwycięzcę oraz szczegółowe wyniki głosowania.
+Może również wysyłać powiadomienia lub e-maile do wyborców o zakończeniu wyborów i zwycięzcy.
+"""
 
 def election_results(request):
     completed_elections = Election.objects.filter(end_time__lte=datetime.datetime.now())
@@ -98,6 +120,11 @@ def election_results(request):
 
     return render(request, 'wybory/public/results.html', {'results': results})
 
+"""
+Obsługuje rejestrację nowego użytkownika.
+Waliduje dane z formularza, tworzy konto użytkownika oraz wysyła powitalny e-mail.
+Po rejestracji przekierowuje do strony logowania.
+"""
 
 def signup(request):
     form = CustomUserCreationForm(request.POST or None)

@@ -6,13 +6,20 @@ from .utils import create_notification, send_notification_email
 from .models import Election, Voter
 
 
+"""
+Wysyła powiadomienie do użytkownika o pomyślnym zalogowaniu.
+Może być używane do celów bezpieczeństwa lub informacyjnych.
+"""
 @receiver(user_logged_in)
 def send_login_notification(sender, request, user, **kwargs):
     title = "Logowanie do systemu"
     message = "Zalogowałeś się do systemu. "
     create_notification(user, title, message)
 
-
+"""
+Zapisuje poprzedni status obiektu (np. wyborcy lub wyborów) w celu późniejszego porównania zmian.
+Może być wykorzystywane do śledzenia zmian statusu i reagowania na nie.
+"""
 @receiver(pre_save, sender=Voter)
 def cache_previous_status(sender, instance, **kwargs):
     if instance.pk:  # Jeśli obiekt już istnieje
@@ -20,6 +27,10 @@ def cache_previous_status(sender, instance, **kwargs):
     else:
         instance._previous_status = None
 
+"""
+Obsługuje logikę po zmianie statusu weryfikacji wyborcy.
+Może wysyłać powiadomienia lub wykonywać inne akcje w zależności od zmiany statusu.
+"""
 @receiver(post_save, sender=Voter)
 def handle_verification_status_change(sender, instance, created, **kwargs):
     print(f"Sygnał post_save wywołany dla {instance.name} (created={created})")
@@ -49,7 +60,10 @@ def handle_verification_status_change(sender, instance, created, **kwargs):
                 )
 
 
-
+"""
+Obsługuje logikę po zmianie statusu wyborów (np. rozpoczęcie lub zakończenie).
+Może wysyłać powiadomienia do użytkowników lub aktualizować dane systemowe.
+"""
 @receiver(post_save, sender=Election)
 def handle_election_status_change(sender, instance, created, **kwargs):
     if created:

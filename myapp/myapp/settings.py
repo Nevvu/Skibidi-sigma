@@ -174,7 +174,7 @@ DEFAULT_FROM_EMAIL = 'no-reply@skibidi-app.pl'
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     'formatters': {
         'verbose': {
             'format': '[{asctime}] {levelname} {name} - {message}',
